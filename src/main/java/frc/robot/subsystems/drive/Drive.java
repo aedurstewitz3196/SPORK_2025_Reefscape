@@ -132,6 +132,10 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
+    
+        // Other periodic tasks like logging or odometry updates
+        Logger.recordOutput("Drive/Pose", getPose());
+        Logger.recordOutput("Drive/Rotation", getRotation());
 
         // Update odometry
         double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
