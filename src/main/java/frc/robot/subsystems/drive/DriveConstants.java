@@ -121,7 +121,8 @@ public class DriveConstants {
                     driveMotorCurrentLimit,
                     1),
             moduleTranslations);
-public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
+
+    public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
         .withCustomModuleTranslations(moduleTranslations)
         .withRobotMass(Kilogram.of(robotMassKg))
         .withGyro(COTS.ofPigeon2())

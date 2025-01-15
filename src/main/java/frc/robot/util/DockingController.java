@@ -4,101 +4,110 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.drive.DriveConstants;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
 import org.littletonrobotics.junction.Logger;
+import static frc.robot.subsystems.drive.DriveConstants.ppConfig;
+
+import java.util.List;
 
 public class DockingController {
-    private final Drive drive;
+
     private final VisionIO vision;
-    private Pose2d targetPose;
+    private final Drive drivetrain;
     private boolean dockingActive = false;
 
-    public DockingController(Drive drive, VisionIO vision) {
-        this.drive = drive;
+    public DockingController(VisionIO vision, Drive drivetrain) {
         this.vision = vision;
+        this.drivetrain = drivetrain;
     }
 
-    public void startDocking() {
-        var robotPose = drive.getPose();
-        var robotPose3d = new Pose3d(
+    public void initiateDocking() {
+        var robotPose = drivetrain.getPose();
+        Pose3d robotPose3d = new Pose3d(
             robotPose.getTranslation().getX(),
             robotPose.getTranslation().getY(),
             0.0, // Z-coordinate is zero for 2D to 3D conversion
             new Rotation3d(0.0, 0.0, robotPose.getRotation().getRadians())
         );
 
+        // Find tags within range
         var tagsInRange = vision.getTagsInRange(robotPose3d, 3.0);
         if (!tagsInRange.isEmpty()) {
-            targetPose = tagsInRange.get(0).pose.toPose2d();
+            Pose2d targetPose = tagsInRange.get(0).pose.toPose2d();
             dockingActive = true;
 
             Logger.recordOutput("Docking/TargetPose", new double[] {
                 targetPose.getX(), targetPose.getY(), targetPose.getRotation().getDegrees()
             });
-            System.out.println("Docking started!");
+
+            // Create docking path
+            createAndFollowPath(robotPose, targetPose);
         } else {
             System.out.println("No visible AprilTags to dock to!");
             dockingActive = false;
         }
     }
 
-    public void executeDocking() {
-        if (!dockingActive || targetPose == null) {
-            return; // Do nothing if docking isn't active
-        }
+    private void createAndFollowPath(Pose2d startPose, Pose2d targetPose) {
+        // Define waypoints
+        List<Pose2d> poses = List.of(
+            startPose,
+            new Pose2d(
+                (startPose.getX() + targetPose.getX()) / 2, // Midpoint X
+                (startPose.getY() + targetPose.getY()) / 2, // Midpoint Y
+                startPose.getRotation()
+            ),
+            targetPose
+        );
 
-        var currentPose = drive.getPose();
-        if (isDocked(currentPose)) {
-            drive.stop();
-            dockingActive = false;
-            System.out.println("Docking complete!");
-            return;
-        }
+        // Convert poses to waypoints
+        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
 
-        var dockingSpeeds = calculateDockingSpeeds(currentPose, targetPose);
-        drive.runVelocity(dockingSpeeds);
+        // Define constraints
+        PathConstraints constraints = new PathConstraints(
+            Units.feetToMeters(4.0), // Max linear velocity (M/S)
+            Units.feetToMeters(2.0), // Max linear acceleration (M/S^2)
+            Math.toRadians(180),     // Max angular velocity (Rad/S)
+            Math.toRadians(90),      // Max angular acceleration (Rad/S^2)
+            12.0,                    // Nominal voltage (Volts)
+            false                    // Should constraints be unlimited
+        );
+
+        // Create path
+        PathPlannerPath dockingPath = new PathPlannerPath(
+            waypoints,
+            constraints,
+            null, // IdealStartingState (optional)
+            new GoalEndState(0.0, targetPose.getRotation()), // Stop and align to the target
+            false // Forward path
+        );
+
+        // Generate trajectory
+        ChassisSpeeds chassisSpeeds = new ChassisSpeeds();
+        chassisSpeeds.vxMetersPerSecond = DriveConstants.maxSpeedMetersPerSec;
+        chassisSpeeds.vyMetersPerSecond = DriveConstants.maxSpeedMetersPerSec;
+        RobotConfig robotConfig = ppConfig; // Use drivetrain-specific config
+        PathPlannerTrajectory trajectory = dockingPath.generateTrajectory(
+            chassisSpeeds,
+            startPose.getRotation(),
+            robotConfig
+        );
+
+        // Follow trajectory
+        AutoBuilder.followPath(dockingPath).schedule();
     }
 
-    private boolean isDocked(Pose2d currentPose) {
-        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
-        double angleDifference = Math.abs(currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians());
-        
-        // These are the distance tolerances for docking
-        return distance < 0.1 && angleDifference < Math.toRadians(5.0);
-    }
-
-    private ChassisSpeeds calculateDockingSpeeds(Pose2d currentPose, Pose2d targetPose) {
-        double dx = targetPose.getX() - currentPose.getX();
-        double dy = targetPose.getY() - currentPose.getY();
-        double distance = Math.sqrt(dx * dx + dy * dy);
-    
-        double targetRotation = targetPose.getRotation().getRadians();
-        double currentRotation = currentPose.getRotation().getRadians();
-        double angularError = targetRotation - currentRotation;
-    
-        // Normalize angular error to the range [-pi, pi]
-        angularError = Math.atan2(Math.sin(angularError), Math.cos(angularError));
-    
-        double angleToTarget = Math.atan2(dy, dx);
-        double angleDifference = angleToTarget - currentRotation;
-    
-        // Normalize angle difference to the range [-pi, pi]
-        angleDifference = Math.atan2(Math.sin(angleDifference), Math.cos(angleDifference));
-    
-        // Proportional control for linear and angular speeds
-        double linearSpeed = Math.cos(angleDifference) * distance * 0.5; // Scale for forward motion
-        double angularSpeed = angularError * 1.0; // Adjust scaling factor as needed
-    
-        // Reduce linear speed if angular error is too large
-        if (Math.abs(angularError) > Math.toRadians(10)) {
-            linearSpeed *= 0.3; // Slow down significantly to focus on angular alignment
-        }
-    
-        return new ChassisSpeeds(linearSpeed, 0.0, angularSpeed);
-    }    
-
-    public boolean isActive() {
-        return dockingActive; // True if docking is still in progress
+    public boolean isDockingActive() {
+        return dockingActive;
     }
 }
