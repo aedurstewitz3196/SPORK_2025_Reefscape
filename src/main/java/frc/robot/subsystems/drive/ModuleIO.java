@@ -19,24 +19,35 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ModuleIO {
     @AutoLog
     public static class ModuleIOInputs {
-        public boolean driveConnected = false;
-        public double drivePositionRad = 0.0;
-        public double driveVelocityRadPerSec = 0.0;
-        public double driveAppliedVolts = 0.0;
+        // General drive motor inputs
+        public boolean driveConnected = false; // Is the drive motor connected
+        public double drivePositionRad = 0.0; // Drive encoder position in radians
+        public double driveVelocityRadPerSec = 0.0; // Drive encoder velocity in rad/sec
+        public double driveAppliedVolts = 0.0; // Voltage applied to the drive motor
         public double driveCurrentAmps = 0.0;
-        public double moduleAbsolutePositionRad;
-        public double moduleVelocityRadPerSec;
-
-        public boolean turnConnected = false;
-        public Rotation2d turnPosition = new Rotation2d();
-        public double turnVelocityRadPerSec = 0.0;
-        public double turnAppliedVolts = 0.0;
+        public double driveSupplyCurrent = 0.0; // Supply current to the drive motor
+        public double driveStatorCurrent = 0.0; // Stator current of the drive motor
+        public boolean driveFault = false; // Drive motor fault state
+    
+        // General turn motor inputs
+        public boolean turnConnected = false; // Is the turn motor connected
+        public Rotation2d turnPosition = new Rotation2d(); // Turn encoder position
+        public double turnVelocityRadPerSec = 0.0; // Turn encoder velocity in rad/sec
+        public double turnAppliedVolts = 0.0; // Voltage applied to the turn motor
         public double turnCurrentAmps = 0.0;
-
-        public double[] odometryTimestamps = new double[] {};
-        public double[] odometryDrivePositionsRad = new double[] {};
-        public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
-    }
+        public double turnSupplyCurrent = 0.0; // Supply current to the turn motor
+        public double turnStatorCurrent = 0.0; // Stator current of the turn motor
+        public boolean turnFault = false; // Turn motor fault state
+    
+        // Absolute encoder inputs (for Phoenix6 CANcoder)
+        public double moduleAbsolutePositionRad = 0.0; // Absolute position in radians
+        public double moduleVelocityRadPerSec = 0.0; // Absolute encoder velocity in rad/sec
+    
+        // Odometry-related fields
+        public double[] odometryTimestamps = new double[] {}; // Timestamps for odometry updates
+        public double[] odometryDrivePositionsRad = new double[] {}; // Drive encoder positions over time
+        public Rotation2d[] odometryTurnPositions = new Rotation2d[] {}; // Turn encoder positions over time
+    }    
 
     /** Updates the set of loggable inputs. */
     public default void updateInputs(ModuleIOInputs inputs) {}
