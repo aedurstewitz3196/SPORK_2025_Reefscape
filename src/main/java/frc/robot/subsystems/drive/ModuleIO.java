@@ -14,6 +14,9 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ModuleIO {
@@ -63,4 +66,15 @@ public interface ModuleIO {
 
     /** Run the turn motor to the specified rotation. */
     public default void setTurnPosition(Rotation2d rotation) {}
+
+    /** Get the position of the current swerve module */
+    default SwerveModulePosition getPosition() {
+        return null;
+    }
+
+    /** Get the state of the current swerve module */
+    default SwerveModuleState getState() {
+        return null;
+    }
+
 }
