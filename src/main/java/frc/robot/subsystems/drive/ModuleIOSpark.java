@@ -15,8 +15,6 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.util.SparkUtil.*;
-
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -123,7 +121,7 @@ public class ModuleIOSpark implements ModuleIO {
         driveConfig
             .idleMode(IdleMode.kBrake)                              // Set the idle mode to brake
             .smartCurrentLimit(driveMotorCurrentLimit)              // Apply current limiting
-            .voltageCompensation(12.0);                             // Enable voltage compensation
+            .voltageCompensation(12.0);              // Enable voltage compensation
     
         driveConfig
             .encoder
@@ -133,7 +131,7 @@ public class ModuleIOSpark implements ModuleIO {
         driveConfig
             .closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)         // Use the encoder as feedback
-            .pidf(driveKp, 0.0, driveKd, 0.0);                      // Set PIDF values
+            .pidf(driveKp, 0.0, driveKd, 0.0);                 // Set PIDF values
     
         tryUntilOk(
             driveSpark,
@@ -149,7 +147,7 @@ public class ModuleIOSpark implements ModuleIO {
             .inverted(turnInverted)                                 // Set motor inversion
             .idleMode(IdleMode.kBrake)                              // Set idle mode to brake
             .smartCurrentLimit(turnMotorCurrentLimit)               // Apply current limiting
-            .voltageCompensation(12.0);                             // Enable voltage compensation
+            .voltageCompensation(12.0);              // Enable voltage compensation
     
         turnConfig
             .absoluteEncoder
@@ -159,10 +157,10 @@ public class ModuleIOSpark implements ModuleIO {
     
         turnConfig
             .closedLoop
-            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)       // Use the absolute encoder as feedback
-            .positionWrappingEnabled(true)                        // Enable position wrapping
-            .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)  // Set position wrapping range
-            .pidf(turnKp, 0.0, turnKd, 0.0);                      // Set PIDF values
+            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)                // Use the absolute encoder as feedback
+            .positionWrappingEnabled(true)                          // Enable position wrapping
+            .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)   // Set position wrapping range
+            .pidf(turnKp, 0.0, turnKd, 0.0);                           // Set PIDF values
     
         tryUntilOk(
             turnSpark,
@@ -176,6 +174,8 @@ public class ModuleIOSpark implements ModuleIO {
         // Update drive inputs
         inputs.drivePositionRad = driveEncoder.getPosition();
         inputs.driveVelocityRadPerSec = driveEncoder.getVelocity();
+
+        turnSpark.set(1.0);
 
         // Update turn inputs
         inputs.turnPosition = getCANangle().minus(zeroRotation);
@@ -219,5 +219,10 @@ public class ModuleIOSpark implements ModuleIO {
             driveEncoder.getVelocity() * driveEncoderVelocityFactor,
             getCANangle()
         );
+    }
+
+    public void setDesiredState(SwerveModuleState state) {
+        setDriveVelocity(state.speedMetersPerSecond);
+        setTurnPosition(state.angle);
     }
 }

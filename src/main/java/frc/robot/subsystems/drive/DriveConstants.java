@@ -78,7 +78,7 @@ public class DriveConstants {
 
     // Turn motor configuration
     public static final boolean turnInverted = false;
-    public static final int turnMotorCurrentLimit = 20; // Amperes
+    public static final int turnMotorCurrentLimit = 40; // Amperes
     public static final double turnMotorReduction = 9424.0 / 203.0;
     public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 

@@ -1,4 +1,4 @@
-// Copyright 2021-2024 FRC 6328
+// Copyright 2021-2025 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // This program is free software; you can redistribute it and/or
@@ -132,10 +132,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
-    
-        // Other periodic tasks like logging or odometry updates
-        Logger.recordOutput("Drive/Pose", getPose());
-        Logger.recordOutput("Drive/Rotation", getRotation());
 
         // Update odometry
         double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
