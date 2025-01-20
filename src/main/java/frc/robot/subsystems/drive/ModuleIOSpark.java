@@ -14,21 +14,13 @@
 package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
-import static frc.robot.util.SparkUtil.*;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.MathUtil;
@@ -38,7 +30,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 /**
  * Updated Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
- * and duty cycle absolute encoder.
+ * and a CANCoder absolute encoder for initialization.
  */
 public class ModuleIOSpark implements ModuleIO {
 
@@ -53,6 +45,9 @@ public class ModuleIOSpark implements ModuleIO {
     // Closed loop controllers
     private final SparkClosedLoopController driveController;
     private final SparkClosedLoopController turnController;
+
+    // Turn offset for relative encoder
+    private double turnOffset;
 
     public ModuleIOSpark(int module) {
         zeroRotation = switch (module) {
@@ -73,6 +68,7 @@ public class ModuleIOSpark implements ModuleIO {
             },
             MotorType.kBrushless
         );
+
         turnSpark = new SparkMax(
             switch (module) {
                 case 0 -> frontLeftTurnCanId;
@@ -83,6 +79,7 @@ public class ModuleIOSpark implements ModuleIO {
             },
             MotorType.kBrushless
         );
+
         turnEncoder = new CANcoder(
             switch (module) {
                 case 0 -> frontLeftEncoderCanId;
@@ -92,97 +89,87 @@ public class ModuleIOSpark implements ModuleIO {
                 default -> 0;
             }
         );
-        
+
         driveEncoder = driveSpark.getEncoder();
         driveController = driveSpark.getClosedLoopController();
         turnController = turnSpark.getClosedLoopController();
-      
+
         // Configure drive motor
         configureDriveMotor();
 
         // Configure turn motor
         configureTurnMotor();
 
-        // Configure turn motor encoder
+        // Configure CANcoder
         configureCANcoder();
+
+        // Initialize turn offset
+        initializeTurnOffset();
     }
 
     private void configureCANcoder() {
-        CANcoderConfiguration config = new CANcoderConfiguration();
+        var config = new com.ctre.phoenix6.configs.CANcoderConfiguration();
         config.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-
-        // Apply the configuration to the CANcoder
         turnEncoder.getConfigurator().apply(config);
     }
 
     private void configureDriveMotor() {
-        var driveConfig = new SparkMaxConfig();
-    
+        var driveConfig = new com.revrobotics.spark.config.SparkMaxConfig();
         driveConfig
-            .idleMode(IdleMode.kBrake)                              // Set the idle mode to brake
-            .smartCurrentLimit(driveMotorCurrentLimit)              // Apply current limiting
-            .voltageCompensation(12.0);              // Enable voltage compensation
-    
-        driveConfig
-            .encoder
-            .positionConversionFactor(driveEncoderPositionFactor)   // Set position conversion factor
-            .velocityConversionFactor(driveEncoderVelocityFactor);  // Set velocity conversion factor
-    
-        driveConfig
-            .closedLoop
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)         // Use the encoder as feedback
-            .pidf(driveKp, 0.0, driveKd, 0.0);                 // Set PIDF values
-    
-        tryUntilOk(
-            driveSpark,
-            5,
-            () -> driveSpark.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-        );
+            .idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kBrake)
+            .smartCurrentLimit(driveMotorCurrentLimit)
+            .voltageCompensation(12.0);
+
+        driveConfig.encoder
+            .positionConversionFactor(driveEncoderPositionFactor)
+            .velocityConversionFactor(driveEncoderVelocityFactor);
+
+        driveConfig.closedLoop
+            .feedbackSensor(com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
+            .pidf(driveKp, driveKi, driveKd, 0.0);
+
+        driveSpark.configure(driveConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
     }
-    
+
     private void configureTurnMotor() {
-        var turnConfig = new SparkMaxConfig();
-    
+        var turnConfig = new com.revrobotics.spark.config.SparkMaxConfig();
         turnConfig
-            .inverted(turnInverted)                                 // Set motor inversion
-            .idleMode(IdleMode.kBrake)                              // Set idle mode to brake
-            .smartCurrentLimit(turnMotorCurrentLimit)               // Apply current limiting
-            .voltageCompensation(12.0);              // Enable voltage compensation
-    
-        turnConfig
-            .absoluteEncoder
-            .inverted(turnEncoderInverted)                         // Set encoder inversion
-            .positionConversionFactor(turnEncoderPositionFactor)   // Set position conversion factor
-            .velocityConversionFactor(turnEncoderVelocityFactor);  // Set velocity conversion factor
-    
-        turnConfig
-            .closedLoop
-            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)                // Use the absolute encoder as feedback
-            .positionWrappingEnabled(true)                          // Enable position wrapping
-            .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)   // Set position wrapping range
-            .pidf(turnKp, 0.0, turnKd, 0.0);                           // Set PIDF values
-    
-        tryUntilOk(
-            turnSpark,
-            5,
-            () -> turnSpark.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+            .idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kBrake)
+            .smartCurrentLimit(turnMotorCurrentLimit)
+            .voltageCompensation(12.0);
+
+        turnConfig.closedLoop
+            .feedbackSensor(com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
+            .pidf(turnKp, turnKi, turnKd, 0.0)
+            .positionWrappingEnabled(true)
+            .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput);
+
+        turnSpark.configure(turnConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+    }
+
+    private void initializeTurnOffset() {
+        double absolutePosition = turnEncoder.getAbsolutePosition().getValueAsDouble();
+        turnOffset = absolutePosition - driveEncoder.getPosition();
+    }
+
+    private Rotation2d getTurnPosition() {
+        double relativePosition = driveEncoder.getPosition() + turnOffset;
+        return Rotation2d.fromRadians(relativePosition);
+    }
+
+    @Override
+    public void setTurnPosition(Rotation2d desiredRotation) {
+        double setpoint = MathUtil.inputModulus(
+            desiredRotation.plus(zeroRotation).getRadians() - turnOffset, turnPIDMinInput, turnPIDMaxInput
         );
-    }    
+        turnController.setReference(setpoint, ControlType.kPosition);
+    }
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
-        // Update drive inputs
         inputs.drivePositionRad = driveEncoder.getPosition();
         inputs.driveVelocityRadPerSec = driveEncoder.getVelocity();
-
-        turnSpark.set(1.0);
-
-        // Update turn inputs
-        inputs.turnPosition = getCANangle().minus(zeroRotation);
-    }
-
-    private Rotation2d getCANangle() {
-        return Rotation2d.fromRadians(turnEncoder.getAbsolutePosition().getValueAsDouble());
+        inputs.turnPosition = getTurnPosition().minus(zeroRotation);
     }
 
     @Override
@@ -193,23 +180,15 @@ public class ModuleIOSpark implements ModuleIO {
             ControlType.kVelocity,
             ClosedLoopSlot.kSlot0,
             feedforward,
-            ArbFFUnits.kVoltage
+            com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage
         );
-    }
-
-    @Override
-    public void setTurnPosition(Rotation2d rotation) {
-        double setpoint = MathUtil.inputModulus(
-            rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput
-        );
-        turnController.setReference(setpoint, ControlType.kPosition);
     }
 
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
             driveEncoder.getPosition() * driveEncoderPositionFactor,
-            getCANangle()
+            getTurnPosition()
         );
     }
 
@@ -217,7 +196,7 @@ public class ModuleIOSpark implements ModuleIO {
     public SwerveModuleState getState() {
         return new SwerveModuleState(
             driveEncoder.getVelocity() * driveEncoderVelocityFactor,
-            getCANangle()
+            getTurnPosition()
         );
     }
 
