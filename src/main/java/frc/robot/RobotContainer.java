@@ -46,7 +46,6 @@ public class RobotContainer {
     private final ControllerBindings controllerBindings;
     private final CommandXboxController controller = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autoChooser;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -104,7 +103,7 @@ public class RobotContainer {
         autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
-        controllerBindings = new ControllerBindings(controller, drive, vision, executorService);
+        controllerBindings = new ControllerBindings(controller, drive, vision);
         controllerBindings.configureButtonBindings();
     }
 
