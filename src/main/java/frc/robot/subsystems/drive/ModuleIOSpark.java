@@ -144,6 +144,7 @@ public class ModuleIOSpark implements ModuleIO {
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput);
 
+        
         turnSpark.configure(turnConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
     }
 

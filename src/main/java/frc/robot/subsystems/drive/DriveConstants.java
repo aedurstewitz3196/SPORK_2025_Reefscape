@@ -67,15 +67,15 @@ public class DriveConstants {
         (2 * Math.PI * wheelRadiusMeters) / (60.0 * driveMotorReduction); // Sensor RPM -> rad/sec
 
     // Drive PID configuration
-    public static final double driveKp = 0.05;
-    public static final double driveKd = 0.02;
-    public static final double driveKs = 0.2;
-    public static final double driveKv = 0.163;
+    public static final double driveKp = 0.1;
+    public static final double driveKd = 0.01;
+    public static final double driveKs = 0.15;
+    public static final double driveKv = 0.16;
     public static final double driveKi = 0.00;
-    public static final double driveSimP = 0.05;
-    public static final double driveSimD = 0.02;
-    public static final double driveSimKs = 0.2;
-    public static final double driveSimKv = 0.163;
+    public static final double driveSimP = 0.1;
+    public static final double driveSimD = 0.01;
+    public static final double driveSimKs = 0.15;
+    public static final double driveSimKv = 0.16;
 
     // Turn motor configuration
     public static final boolean turnInverted = false;
@@ -94,11 +94,11 @@ public class DriveConstants {
     public static final double robotMOI = 6.883;
     
     // Turn PID configuration
-    public static final double turnKp = 2.0;
-    public static final double turnKd = 0.0;
+    public static final double turnKp = 1.5;
+    public static final double turnKd = 0.1;
     public static final double turnKi = 0.0;
-    public static final double turnSimP = 8.0;
-    public static final double turnSimD = 0.0;
+    public static final double turnSimP = 1.5;
+    public static final double turnSimD = 0.1;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
