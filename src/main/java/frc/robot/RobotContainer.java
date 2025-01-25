@@ -38,7 +38,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-
     // Subsystems
     private final Drive drive;
     private final VisionIO vision;
@@ -46,8 +45,6 @@ public class RobotContainer {
     private final ControllerBindings controllerBindings;
     private final CommandXboxController controller = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autoChooser;
-
-    private final StringCoderReader stringCoderTest;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -60,9 +57,8 @@ public class RobotContainer {
                         new ModuleIOSpark(1),
                         new ModuleIOSpark(2),
                         new ModuleIOSpark(3));
-
+                
                 vision = null;
-
                 break;
 
             case SIM:
@@ -106,10 +102,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         controllerBindings = new ControllerBindings(controller, drive, vision);
-        controllerBindings.configureButtonBindings();
-
-        // Testing code for Celesco string coder via analog bus
-        //stringCoderTest = new StringCoderReader(0, 16.0);
+        controllerBindings.configure();
     }
 
     public Command getAutonomousCommand() {
