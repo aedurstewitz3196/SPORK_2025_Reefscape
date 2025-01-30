@@ -47,23 +47,22 @@ public class ControllerProfiles {
             1,
             0,
             2, // Joystick Axes
-            4,
+            3,
             2,
             1, // Buttons
-            2,
+            4,
             3,
             4,
             9 // Triggers and Bumper
             );
-
     public static final ControllerProfile WINDOWS_WIRED_XBOX = new ControllerProfile(
             1,
             0,
-            4, // Joystick Axes
+            2, // Joystick Axes
             3,
             2,
             1, // Buttons
-            2,
+            4,
             3,
             4,
             1 // Triggers and Bumper
@@ -76,7 +75,7 @@ public class ControllerProfiles {
             3,
             2,
             1, // Buttons
-            2,
+            4,
             3,
             4,
             6 // Triggers and Bumper

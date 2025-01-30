@@ -47,16 +47,16 @@ public class ControllerBindings {
 
         
             // Face Button Testing   
-        controller.button(activeProfile.buttonA)
+        controller2.button(activeProfile.buttonA)
             .whileTrue(Commands.run(() -> System.out.println("A Button Pushed"))); // A Button Testing
 
-        controller.button(activeProfile.buttonB)
+        controller2.button(activeProfile.buttonB)
             .whileTrue(Commands.run(() -> System.out.println("B Button Pushed"))); // B Button Testing
 
-        controller.button(activeProfile.buttonX)
+        controller2.button(activeProfile.buttonX)
             .whileTrue(Commands.run(() -> System.out.println("X Button Pushed"))); // X Button Testing
 
-        controller.button(activeProfile.buttonY)
+        controller2.button(activeProfile.buttonY)
             .whileTrue(Commands.run(() -> System.out.println("Y Button Pushed"))); // Y Buuton Testing
     }
     //Cannot press same DPad button twice, must press another DPad button before pressing again.
