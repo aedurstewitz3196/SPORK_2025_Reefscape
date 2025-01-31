@@ -5,9 +5,15 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.LimelightHelpers;
+import edu.wpi.first.math.util.Units;
 
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,57 +38,80 @@ public class VisionIOLimelightSim implements VisionIO {
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
-    // Simulate connected status
-    inputs.connected = true;
+        // Simulate connected status
+        inputs.connected = true;
 
-    // Get robot's current simulated pose and convert from Pose2d to Pose3d
-    Pose3d robotPose = new Pose3d(drive.getSimulatedDriveTrainPose()); // Convert Pose2d to Pose3d
+        // Get robot's current simulated pose and convert from Pose2d to Pose3d
+        Pose3d robotPose = new Pose3d(drive.getSimulatedDriveTrainPose()); 
 
-    // Find visible tags
-    List<edu.wpi.first.apriltag.AprilTag> visibleTags = getTagsInRange(robotPose, 3.0); // Example range of 3 meters
+        // Find visible tags
+        List<edu.wpi.first.apriltag.AprilTag> visibleTags = getTagsInRange(robotPose, 3.0); 
 
-    if (!visibleTags.isEmpty()) {
-        Logger.recordOutput("Vision/DetectedTags", visibleTags.stream()
-            .map(tag -> "ID: " + tag.ID + ", Pose: " + tag.pose)
-            .collect(Collectors.joining("; ")));
+        if (!visibleTags.isEmpty()) {
+            Logger.recordOutput("Vision/DetectedTags", visibleTags.stream()
+                .map(tag -> "ID: " + tag.ID + ", Pose: " + tag.pose)
+                .collect(Collectors.joining("; ")));
 
-        // Use the closest visible tag
-        edu.wpi.first.apriltag.AprilTag closestTag = visibleTags.get(0);
+            // Use the closest visible tag
+            edu.wpi.first.apriltag.AprilTag closestTag = visibleTags.get(0);
 
-        // Simulate target observation
-        inputs.latestTargetObservation = new TargetObservation(
-                calculateTX(robotPose, closestTag.pose),
-                calculateTY(robotPose, closestTag.pose)
-        );
+            // Simulate pose estimate based on tag position
+            Pose3d estimatedPose = closestTag.pose;  
+            double[] poseArray = LimelightHelpers.pose3dToArray(estimatedPose);
 
-        // Simulate pose observations
-        inputs.poseObservations = new PoseObservation[]{
-            new PoseObservation(
-                    System.currentTimeMillis() * 1.0e-3,  // Simulated timestamp
-                    closestTag.pose,                     // Simulated tag pose
-                    0.0,                                 // Ambiguity
-                    1,                                   // Tag count
-                    robotPose.getTranslation().getDistance(closestTag.pose.getTranslation()), // Distance
-                    PoseObservationType.MEGATAG_1        // Observation type
-            )
-        };
+            // Simulate latency and timestamp for pose update
+            double latency = 30.0; // Example: 30ms latency
+            double timestamp = RobotController.getFPGATime() * 1.0e-6; // Convert to seconds
+            double tagID = closestTag.ID;
 
-        // Simulate tag IDs
-        inputs.tagIds = new int[]{closestTag.ID};
+            // Construct the array format expected by NetworkTables
+            double[] networkTablePose = new double[] {
+                estimatedPose.getTranslation().getX(),
+                estimatedPose.getTranslation().getY(),
+                estimatedPose.getTranslation().getZ(),
+                Units.radiansToDegrees(estimatedPose.getRotation().getX()),
+                Units.radiansToDegrees(estimatedPose.getRotation().getY()),
+                Units.radiansToDegrees(estimatedPose.getRotation().getZ()),
+                latency, // Latency
+                1,       // Tag count
+                1,       // Tag span
+                estimatedPose.getTranslation().getDistance(robotPose.getTranslation()), // Avg tag distance
+                100,     // Avg tag area
+                tagID    // First tag ID
+            };
 
-        // Log to AdvantageScope
-        Logger.recordOutput("Vision/SimulatedTagID", closestTag.ID);
-        Logger.recordOutput("Vision/SimulatedTagPose", new double[]{
-            closestTag.pose.getTranslation().getX(),
-            closestTag.pose.getTranslation().getY(),
-            closestTag.pose.getTranslation().getZ()
-        });
-    } else {
-        inputs.latestTargetObservation = null;
-        inputs.poseObservations = new PoseObservation[0];
-        inputs.tagIds = new int[0];
+            // Publish to NetworkTables under botpose_wpiblue
+            NetworkTableInstance.getDefault().getTable("limelight-sim")
+                .getEntry("botpose_wpiblue").setDoubleArray(networkTablePose);
+
+            // Simulate pose observations for AdvantageScope logging
+            inputs.poseObservations = new PoseObservation[] {
+                new PoseObservation(
+                    timestamp - latency * 1.0e-3,  // Adjusted timestamp
+                    estimatedPose,                 // Estimated pose
+                    0.0,                           // Ambiguity
+                    1,                             // Number of detected tags
+                    estimatedPose.getTranslation().getDistance(robotPose.getTranslation()), // Distance
+                    PoseObservationType.MEGATAG_1 // Type
+                )
+            };
+
+            // Simulate tag IDs
+            inputs.tagIds = new int[] {(int) tagID};
+
+            // Log simulated pose for debugging
+            // System.out.println("Updated NetworkTables Pose Estimate: " + Arrays.toString(networkTablePose));
+        } else {
+            inputs.latestTargetObservation = null;
+            inputs.poseObservations = new PoseObservation[0];
+            inputs.tagIds = new int[0];
+
+            // Clear NetworkTables if no valid pose
+            NetworkTableInstance.getDefault().getTable("limelight-sim")
+                .getEntry("botpose_wpiblue").setDoubleArray(new double[0]);
+        }
     }
-}
+
 
     /**
      * Gets tags within a given range of the robot's pose.

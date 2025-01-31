@@ -38,15 +38,15 @@ public class ControllerBindings {
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
                 // Pay attention to the fact that some of these are inverted
-                () -> -controller.getRawAxis(activeProfile.leftYAxis), // Forward/backward
-                () -> -controller.getRawAxis(activeProfile.leftXAxis), // Strafe
+                () -> controller.getRawAxis(activeProfile.leftYAxis), // Forward/backward
+                () -> controller.getRawAxis(activeProfile.leftXAxis), // Strafe
                 () -> -controller.getRawAxis(activeProfile.rightXAxis) // Rotation
             ));
 
         
             // Face Button Testing   
         controller.button(activeProfile.buttonA)
-            .whileTrue(Commands.run(() -> System.out.println("A Button Pushed"))); // A Button Testing
+            .whileTrue(Commands.run(() -> new DockingController(vision, drive).initiateDocking())); 
 
         controller.button(activeProfile.buttonB)
             .whileTrue(Commands.run(() -> System.out.println("B Button Pushed"))); // B Button Testing

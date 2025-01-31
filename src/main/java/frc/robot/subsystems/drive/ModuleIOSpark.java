@@ -14,6 +14,7 @@
 package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -40,14 +41,12 @@ public class ModuleIOSpark implements ModuleIO {
     private final SparkBase driveSpark;
     private final SparkBase turnSpark;
     private final RelativeEncoder driveEncoder;
-    private final CANcoder turnEncoder;
+    private final RelativeEncoder turnEncoder;
+    private final CANcoder absoluteEncoder;
 
     // Closed loop controllers
     private final SparkClosedLoopController driveController;
     private final SparkClosedLoopController turnController;
-
-    // Turn offset for relative encoder
-    private double turnOffset;
 
     public ModuleIOSpark(int module) {
         zeroRotation = switch (module) {
@@ -80,7 +79,7 @@ public class ModuleIOSpark implements ModuleIO {
             MotorType.kBrushless
         );
 
-        turnEncoder = new CANcoder(
+        absoluteEncoder = new CANcoder(
             switch (module) {
                 case 0 -> frontLeftEncoderCanId;
                 case 1 -> frontRightEncoderCanId;
@@ -91,6 +90,7 @@ public class ModuleIOSpark implements ModuleIO {
         );
 
         driveEncoder = driveSpark.getEncoder();
+        turnEncoder = turnSpark.getEncoder();
         driveController = driveSpark.getClosedLoopController();
         turnController = turnSpark.getClosedLoopController();
 
@@ -110,7 +110,14 @@ public class ModuleIOSpark implements ModuleIO {
     private void configureCANcoder() {
         var config = new com.ctre.phoenix6.configs.CANcoderConfiguration();
         config.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-        turnEncoder.getConfigurator().apply(config);
+        config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+
+        // Apply configuration to the CANcoder
+        absoluteEncoder.getConfigurator().apply(config);
+
+        // Adjust the update frequency for signals to avoid CANbus saturation
+        absoluteEncoder.getAbsolutePosition().setUpdateFrequency(5); // 5 Hz (200ms interval)
+        absoluteEncoder.getVelocity().setUpdateFrequency(5);         // 5 Hz (if velocity data is used)
     }
 
     private void configureDriveMotor() {
@@ -118,6 +125,7 @@ public class ModuleIOSpark implements ModuleIO {
         driveConfig
             .idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kBrake)
             .smartCurrentLimit(driveMotorCurrentLimit)
+            .inverted(true)
             .voltageCompensation(12.0);
 
         driveConfig.encoder
@@ -136,32 +144,38 @@ public class ModuleIOSpark implements ModuleIO {
         turnConfig
             .idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kBrake)
             .smartCurrentLimit(turnMotorCurrentLimit)
+            .inverted(turnEncoderInverted)
             .voltageCompensation(12.0);
-
+    
+        turnConfig.encoder
+            .positionConversionFactor(turnEncoderPositionFactor) // Apply gear reduction correction
+            .velocityConversionFactor(turnEncoderVelocityFactor); // Correct velocity scaling
+    
         turnConfig.closedLoop
             .feedbackSensor(com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
             .pidf(turnKp, turnKi, turnKd, 0.0)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput);
-
-        
+    
         turnSpark.configure(turnConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
-    }
+    }    
 
     private void initializeTurnOffset() {
-        double absolutePosition = turnEncoder.getAbsolutePosition().getValueAsDouble();
-        turnOffset = absolutePosition - driveEncoder.getPosition();
+        // SET absolutePosition to Physical Encoders poisition
+        double absolutePosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble();
+        
+        // SET turnEncoder (Relative Encoder) to the absolute encoders position
+        turnEncoder.setPosition(absolutePosition - zeroRotation.getRotations());
     }
 
     private Rotation2d getTurnPosition() {
-        double relativePosition = driveEncoder.getPosition() + turnOffset;
-        return Rotation2d.fromRadians(relativePosition);
+        return Rotation2d.fromRadians(turnEncoder.getPosition());
     }
 
     @Override
     public void setTurnPosition(Rotation2d desiredRotation) {
         double setpoint = MathUtil.inputModulus(
-            desiredRotation.plus(zeroRotation).getRadians() - turnOffset, turnPIDMinInput, turnPIDMaxInput
+            desiredRotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput
         );
         turnController.setReference(setpoint, ControlType.kPosition);
     }
@@ -170,7 +184,7 @@ public class ModuleIOSpark implements ModuleIO {
     public void updateInputs(ModuleIOInputs inputs) {
         inputs.drivePositionRad = driveEncoder.getPosition();
         inputs.driveVelocityRadPerSec = driveEncoder.getVelocity();
-        inputs.turnPosition = getTurnPosition().minus(zeroRotation);
+        inputs.turnPosition = getTurnPosition();
     }
 
     @Override

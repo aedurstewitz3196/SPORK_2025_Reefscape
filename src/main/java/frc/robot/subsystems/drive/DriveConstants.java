@@ -30,11 +30,11 @@ public class DriveConstants {
         new Translation2d(-trackWidth / 2.0, -wheelBase / 2.0)
     };
 
-    // Zeroed rotation values for each module
-    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(0.0);
-    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.0);
-    public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.0);
-    public static final Rotation2d backRightZeroRotation = new Rotation2d(0.0);
+    // Zeroed rotation values for each module to account for physical offset
+    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(3.0);
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(1.12);
+    public static final Rotation2d backLeftZeroRotation = new Rotation2d(2.6);
+    public static final Rotation2d backRightZeroRotation = new Rotation2d(3.3);
 
     // CAN IDs
     public static final int pigeonCanId = 9;
@@ -56,9 +56,9 @@ public class DriveConstants {
 
     // Drive motor configuration
     public static final int driveMotorCurrentLimit = 40; // Amperes
-    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
-    public static final double driveMotorReduction = (60.0 * 20.0) / (15.0 * 10.0); // Gear Ratio
-    public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
+    public static final double wheelRadiusMeters = Units.inchesToMeters(2.0);
+    public static final double driveMotorReduction = 6.75;
+    public static final DCMotor driveGearbox = DCMotor.getNEO(1);
 
     // Drive encoder configuration
     public static final double driveEncoderPositionFactor =
@@ -67,10 +67,10 @@ public class DriveConstants {
         (2 * Math.PI * wheelRadiusMeters) / (60.0 * driveMotorReduction); // Sensor RPM -> rad/sec
 
     // Drive PID configuration
-    public static final double driveKp = 0.1;
-    public static final double driveKd = 0.01;
-    public static final double driveKs = 0.15;
-    public static final double driveKv = 0.16;
+    public static final double driveKp = 0.06;   // 0.06
+    public static final double driveKd = 0.007;   // 0.007
+    public static final double driveKs = 0.3;
+    public static final double driveKv = 0.1;
     public static final double driveKi = 0.00;
     public static final double driveSimP = 0.1;
     public static final double driveSimD = 0.01;
@@ -80,12 +80,12 @@ public class DriveConstants {
     // Turn motor configuration
     public static final boolean turnInverted = false;
     public static final int turnMotorCurrentLimit = 40; // Amperes
-    public static final double turnMotorReduction = 9424.0 / 203.0;
+    public static final double turnMotorReduction = (150/7); // ~21.4286
     public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 
     // Turn encoder configuration
     public static final boolean turnEncoderInverted = true;
-    public static final double turnEncoderPositionFactor = 2 * Math.PI; // Sensor rotations -> radians
+    public static final double turnEncoderPositionFactor = (2 * Math.PI) / turnMotorReduction; // Sensor rotations -> radians
     public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // Sensor RPM -> rad/sec
 
     // PathPlanner configuration
@@ -94,9 +94,9 @@ public class DriveConstants {
     public static final double robotMOI = 6.883;
     
     // Turn PID configuration
-    public static final double turnKp = 1.5;
-    public static final double turnKd = 0.1;
-    public static final double turnKi = 0.0;
+    public static final double turnKp = 0.01; //0.06
+    public static final double turnKd = 0.00; //0.007
+    public static final double turnKi = 0.00;
     public static final double turnSimP = 1.5;
     public static final double turnSimD = 0.1;
     public static final double turnPIDMinInput = 0; // Radians
@@ -107,9 +107,6 @@ public class DriveConstants {
 
     // Neutral mode configuration
     public static final boolean neutralModeBrake = true;
-
-    // Drive motor inversions
-    public static final boolean[] driveInversions = {true, false, false, false}; // FL, FR, BL, BR
 
 // Simulation configuration
     public static final RobotConfig ppConfig = new RobotConfig(
