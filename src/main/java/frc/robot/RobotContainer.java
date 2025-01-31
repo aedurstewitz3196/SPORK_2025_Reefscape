@@ -47,6 +47,7 @@ public class RobotContainer {
     private SwerveDriveSimulation driveSimulation = null;
     private final ControllerBindings controllerBindings;
     private final CommandXboxController controller = new CommandXboxController(0);
+    private final CommandXboxController controller2 = new CommandXboxController(1);
     private final LoggedDashboardChooser<Command> autoChooser;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -104,7 +105,7 @@ public class RobotContainer {
         autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
-        controllerBindings = new ControllerBindings(controller, drive, vision);
+        controllerBindings = new ControllerBindings(controller, controller2, drive, vision);
         controllerBindings.configure();
     }
 
