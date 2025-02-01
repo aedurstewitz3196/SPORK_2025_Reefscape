@@ -68,7 +68,7 @@ public class DockingController {
             ));
 
             // Offset the target pose to stop 1 inch away from the tag
-            double offsetDistance = Units.inchesToMeters(1.0);
+            double offsetDistance = -Units.inchesToMeters(1.0);
             Transform3d offsetTransform = new Transform3d(
                 new Pose3d(),
                 new Pose3d(offsetDistance, 0.0, 0.0, new Rotation3d())

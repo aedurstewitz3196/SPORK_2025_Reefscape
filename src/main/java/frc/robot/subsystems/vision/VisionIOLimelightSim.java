@@ -3,7 +3,7 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
@@ -13,7 +13,6 @@ import edu.wpi.first.math.util.Units;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,17 +51,14 @@ public class VisionIOLimelightSim implements VisionIO {
                 .map(tag -> "ID: " + tag.ID + ", Pose: " + tag.pose)
                 .collect(Collectors.joining("; ")));
 
-            // Use the closest visible tag
-            edu.wpi.first.apriltag.AprilTag closestTag = visibleTags.get(0);
+            // Compute weighted average pose from all visible tags
+            Pose3d estimatedPose = computeWeightedAveragePose(visibleTags).transformBy(robotToCamera.inverse());
 
-            // Simulate pose estimate based on tag position
-            Pose3d estimatedPose = closestTag.pose;  
             double[] poseArray = LimelightHelpers.pose3dToArray(estimatedPose);
 
             // Simulate latency and timestamp for pose update
             double latency = 30.0; // Example: 30ms latency
             double timestamp = RobotController.getFPGATime() * 1.0e-6; // Convert to seconds
-            double tagID = closestTag.ID;
 
             // Construct the array format expected by NetworkTables
             double[] networkTablePose = new double[] {
@@ -73,11 +69,11 @@ public class VisionIOLimelightSim implements VisionIO {
                 Units.radiansToDegrees(estimatedPose.getRotation().getY()),
                 Units.radiansToDegrees(estimatedPose.getRotation().getZ()),
                 latency, // Latency
-                1,       // Tag count
-                1,       // Tag span
+                visibleTags.size(), // Tag count
+                1, // Tag span (not used, but keeping format consistent)
                 estimatedPose.getTranslation().getDistance(robotPose.getTranslation()), // Avg tag distance
-                100,     // Avg tag area
-                tagID    // First tag ID
+                100, // Avg tag area (simulated value)
+                visibleTags.get(0).ID // First tag ID for reference
             };
 
             // Publish to NetworkTables under botpose_wpiblue
@@ -90,17 +86,14 @@ public class VisionIOLimelightSim implements VisionIO {
                     timestamp - latency * 1.0e-3,  // Adjusted timestamp
                     estimatedPose,                 // Estimated pose
                     0.0,                           // Ambiguity
-                    1,                             // Number of detected tags
+                    visibleTags.size(),            // Number of detected tags
                     estimatedPose.getTranslation().getDistance(robotPose.getTranslation()), // Distance
                     PoseObservationType.MEGATAG_1 // Type
                 )
             };
 
             // Simulate tag IDs
-            inputs.tagIds = new int[] {(int) tagID};
-
-            // Log simulated pose for debugging
-            // System.out.println("Updated NetworkTables Pose Estimate: " + Arrays.toString(networkTablePose));
+            inputs.tagIds = visibleTags.stream().mapToInt(tag -> tag.ID).toArray();
         } else {
             inputs.latestTargetObservation = null;
             inputs.poseObservations = new PoseObservation[0];
@@ -112,6 +105,37 @@ public class VisionIOLimelightSim implements VisionIO {
         }
     }
 
+    /**
+     * Computes a weighted average pose from multiple visible AprilTags.
+     * Closer tags contribute more weight to the final estimated pose.
+     */
+    private Pose3d computeWeightedAveragePose(List<edu.wpi.first.apriltag.AprilTag> tags) {
+        if (tags.isEmpty()) return new Pose3d(); // Return default if no tags
+
+        double totalWeight = 0.0;
+        double weightedX = 0.0, weightedY = 0.0, weightedZ = 0.0;
+        double weightedYaw = 0.0, weightedPitch = 0.0, weightedRoll = 0.0;
+
+        for (var tag : tags) {
+            double weight = 1.0 / tag.pose.getTranslation().getNorm(); // Closer tags contribute more
+            totalWeight += weight;
+
+            weightedX += tag.pose.getTranslation().getX() * weight;
+            weightedY += tag.pose.getTranslation().getY() * weight;
+            weightedZ += tag.pose.getTranslation().getZ() * weight;
+
+            weightedYaw += tag.pose.getRotation().getZ() * weight;
+            weightedPitch += tag.pose.getRotation().getY() * weight;
+            weightedRoll += tag.pose.getRotation().getX() * weight;
+        }
+
+        return new Pose3d(
+            weightedX / totalWeight,
+            weightedY / totalWeight,
+            weightedZ / totalWeight,
+            new Rotation3d(weightedRoll / totalWeight, weightedPitch / totalWeight, weightedYaw / totalWeight)
+        );
+    }
 
     /**
      * Gets tags within a given range of the robot's pose.
@@ -119,51 +143,14 @@ public class VisionIOLimelightSim implements VisionIO {
     public List<edu.wpi.first.apriltag.AprilTag> getTagsInRange(Pose3d robotPose, double maxRange) {
         return fieldLayout.getTags().stream()
                 .filter(tag -> robotPose.getTranslation().getDistance(tag.pose.getTranslation()) <= maxRange)
-                // .filter(tag -> isWithinFieldOfView(robotPose, tag.pose)) // Temporarily disable FOV filtering
                 .sorted((tag1, tag2) -> Double.compare(
                         robotPose.getTranslation().getDistance(tag1.pose.getTranslation()),
                         robotPose.getTranslation().getDistance(tag2.pose.getTranslation())))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Calculates the horizontal offset (TX) to a tag from the robot's pose.
-     */
-    private Rotation2d calculateTX(Pose3d robotPose, Pose3d tagPose) {
-        double dx = tagPose.getTranslation().getX() - robotPose.getTranslation().getX();
-        double dy = tagPose.getTranslation().getY() - robotPose.getTranslation().getY();
-        return Rotation2d.fromRadians(Math.atan2(dy, dx));
-    }
-
-    /**
-     * Calculates the vertical offset (TY) to a tag from the robot's pose.
-     */
-    private Rotation2d calculateTY(Pose3d robotPose, Pose3d tagPose) {
-        double dz = tagPose.getTranslation().getZ() - robotPose.getTranslation().getZ();
-        double dx = tagPose.getTranslation().getX() - robotPose.getTranslation().getX();
-        return Rotation2d.fromRadians(Math.atan2(dz, dx));
-    }
-
-    private boolean isWithinFieldOfView(Pose3d robotPose, Pose3d tagPose) {
-        // Calculate the relative translation
-        Pose3d relativePose = tagPose.relativeTo(robotPose);
-    
-        // Extract translation components
-        double dx = relativePose.getTranslation().getX();
-        double dy = relativePose.getTranslation().getY();
-        double dz = relativePose.getTranslation().getZ();
-    
-        // Calculate horizontal (tx) and vertical (ty) angles in degrees
-        double tx = Math.toDegrees(Math.atan2(dy, dx)); // Horizontal angle
-        double ty = Math.toDegrees(Math.atan2(dz, dx)); // Vertical angle
-    
-        // Check if the angles fall within the field of view
-        return Math.abs(tx) <= horizontalFOV && Math.abs(ty) <= verticalFOV;
-    }
-    
     public void setFieldOfView(double horizontalFOV, double verticalFOV) {
         this.horizontalFOV = horizontalFOV;
         this.verticalFOV = verticalFOV;
     }
-    
 }

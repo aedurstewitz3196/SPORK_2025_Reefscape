@@ -101,7 +101,7 @@ public class ControllerBindings {
                 case 180: // Down
                     executePOVCommand("Down", new InstantCommand(() -> {
                         System.out.println("POV Down pressed!");
-                        // Add logic for Down direction
+                        RobotActions.executeDockToClosestAprilTag(drive, vision);
                     }));
                     break;
                 case 270: // Left

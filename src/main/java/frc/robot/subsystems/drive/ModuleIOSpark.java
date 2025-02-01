@@ -109,15 +109,19 @@ public class ModuleIOSpark implements ModuleIO {
 
     private void configureCANcoder() {
         var config = new com.ctre.phoenix6.configs.CANcoderConfiguration();
+        
+        // SET 
         config.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        
+        // IGNORE this setting if you're not actively using the CANcoder for position
         config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
 
-        // Apply configuration to the CANcoder
+        // APPLY configuration to the CANcoder
         absoluteEncoder.getConfigurator().apply(config);
 
-        // Adjust the update frequency for signals to avoid CANbus saturation
-        absoluteEncoder.getAbsolutePosition().setUpdateFrequency(5); // 5 Hz (200ms interval)
-        absoluteEncoder.getVelocity().setUpdateFrequency(5);         // 5 Hz (if velocity data is used)
+        // DISABLE updates from the CANcoder as they're no longer needed
+        absoluteEncoder.getAbsolutePosition().setUpdateFrequency(0);
+        absoluteEncoder.getVelocity().setUpdateFrequency(0);
     }
 
     private void configureDriveMotor() {
