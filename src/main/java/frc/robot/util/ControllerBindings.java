@@ -18,13 +18,12 @@ public class ControllerBindings {
     private final Drive drive;
     private final VisionIO vision;
     private final ControllerProfiles.ControllerProfile activeProfile;
-    private int lastPOV = -1; // Tracks the previous POV state
 
-    public ControllerBindings(CommandXboxController driverController,CommandXboxController operatorController, Drive driveSubsystem, VisionIO vision) {
-        this.driverController = driverController;
-        this.operatorController = operatorController;
+    public ControllerBindings(CommandXboxController controller, Drive driveSubsystem, VisionIO vision) {
+        this.controller = controller;
         this.drive = driveSubsystem;
         this.vision = vision;
+        this.elevator = elevator;
 
         // Detect and set the active controller profile
         this.activeProfile = ControllerProfiles.detectControllerProfile();
@@ -40,23 +39,19 @@ public class ControllerBindings {
     private void configureButtonBindings() {
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
-                () -> driverController.getRawAxis(activeProfile.leftYAxis),  // Forward/backward
-                () -> driverController.getRawAxis(activeProfile.leftXAxis),  // Strafe
-                () -> -driverController.getRawAxis(activeProfile.rightXAxis)  // Rotation
-        ));
-            //Primary Controller face buttons
-        driverController.button(activeProfile.buttonA)
-            .whileTrue(Commands.run(() -> System.out.println("Driver A Button Pushed")));
- 
-        driverController.button(activeProfile.buttonB)
-            .whileTrue(Commands.run(() -> System.out.println("Driver B Button Pushed")));
+                // Pay attention to the fact that some of these are inverted
+                () -> controller.getRawAxis(activeProfile.leftYAxis), // Forward/backward
+                () -> controller.getRawAxis(activeProfile.leftXAxis), // Strafe
+                () -> controller.getRawAxis(activeProfile.rightXAxis) // Rotation
+            ));
 
-        driverController.button(activeProfile.buttonX)
-            .whileTrue(Commands.run(() -> System.out.println("Driver X Button Pushed")));
-       
-            // Secondary Controller face buttons
-        operatorController.button(activeProfile.buttonA)
-            .whileTrue(Commands.run(() -> System.out.println("Operator A Button Pushed")));
+        // Example: Button A - Drive forward at half speed
+        //controller.button(activeProfile.buttonA)
+        //    .onTrue(null);
+
+        // Example: Button B - Stop the drive subsystem
+        //controller.button(activeProfile.buttonB)
+        //    .onTrue(null);
 
         operatorController.button(activeProfile.buttonB)
             .whileTrue(Commands.run(() -> System.out.println("Operator B Button Pushed")));
