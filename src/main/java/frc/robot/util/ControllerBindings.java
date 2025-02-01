@@ -42,18 +42,28 @@ public class ControllerBindings {
                 drive,
                 () -> driverController.getRawAxis(activeProfile.leftYAxis),  // Forward/backward
                 () -> driverController.getRawAxis(activeProfile.leftXAxis),  // Strafe
-                () -> driverController.getRawAxis(activeProfile.rightXAxis)  // Rotation
+                () -> -driverController.getRawAxis(activeProfile.rightXAxis)  // Rotation
         ));
+            //Primary Controller face buttons
+        driverController.button(activeProfile.buttonA)
+            .whileTrue(Commands.run(() -> System.out.println("Driver A Button Pushed")));
+ 
+        driverController.button(activeProfile.buttonB)
+            .whileTrue(Commands.run(() -> System.out.println("Driver B Button Pushed")));
 
+        driverController.button(activeProfile.buttonX)
+            .whileTrue(Commands.run(() -> System.out.println("Driver X Button Pushed")));
+       
+            // Secondary Controller face buttons
         operatorController.button(activeProfile.buttonA)
-            .whileTrue(Commands.run(() -> System.out.println("Operator A Button Pushed - Intake")));
+            .whileTrue(Commands.run(() -> System.out.println("Operator A Button Pushed")));
 
         operatorController.button(activeProfile.buttonB)
-            .whileTrue(Commands.run(() -> System.out.println("Operator B Button Pushed - Shooter")));
+            .whileTrue(Commands.run(() -> System.out.println("Operator B Button Pushed")));
 
         operatorController.button(activeProfile.buttonX)
-            .whileTrue(Commands.run(() -> System.out.println("Operator X Button Pushed - Arm")));
-    }
+            .whileTrue(Commands.run(() -> System.out.println("Operator X Button Pushed")));
+            }
     //Cannot press same DPad button twice, must press another DPad button before pressing again.
     //Doesn't need fix because you are pressing one button at a time anyways.
     private void configureTriggerBindings() {
@@ -65,7 +75,7 @@ public class ControllerBindings {
         new Trigger(() -> operatorController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
             .whileTrue(Commands.run(() -> System.out.println("Operator Right Trigger Pushed - Shoot")));
         
-            // Define a Trigger that monitors trigger brindings
+            // Primary Controller DPad Setttings
         new Trigger(() -> {
             int currentPOV = driverController.getHID().getPOV();
             boolean pressed = (currentPOV != -1 && currentPOV != lastPOV);
@@ -76,6 +86,47 @@ public class ControllerBindings {
         }).onTrue(new InstantCommand(() -> {
             // Execute specific actions based on the POV direction
             switch (driverController.getHID().getPOV()) {
+                case 0: // Up
+                    executePOVCommand("Up", new InstantCommand(() -> {
+                        System.out.println("POV Up pressed!");
+                        // Add logic for Up direction
+                    }));
+                    break;
+                case 90: // Right
+                    executePOVCommand("Right", new InstantCommand(() -> {
+                        System.out.println("POV Right pressed!");
+                        // Add logic for Right direction
+                    }));
+                    break;
+                case 180: // Down
+                    executePOVCommand("Down", new InstantCommand(() -> {
+                        System.out.println("POV Down pressed!");
+                        // Add logic for Down direction
+                    }));
+                    break;
+                case 270: // Left
+                    executePOVCommand("Left", new InstantCommand(() -> {
+                        System.out.println("POV Left pressed!");
+                        // Add logic for Left direction
+                    }));
+                    break;
+                default:
+                    // Handle other or undefined POV angles (if necessary)
+                    System.out.println("POV direction not defined: " + driverController.getHID().getPOV());
+                    break;
+            }
+        })); 
+        // Secondary Controller DPad Settings
+        new Trigger(() -> {
+            int currentPOV = driverController.getHID().getPOV();
+            boolean pressed = (currentPOV != -1 && currentPOV != lastPOV);
+            if (pressed) {
+                lastPOV = currentPOV; // Update the lastPOV state
+            }
+            return pressed; // True only on rising edge
+        }).onTrue(new InstantCommand(() -> {
+            // Execute specific actions based on the POV direction
+            switch (operatorController.getHID().getPOV()) {
                 case 0: // Up
                     executePOVCommand("Up", new InstantCommand(() -> {
                         System.out.println("POV Up pressed!");
