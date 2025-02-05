@@ -32,7 +32,7 @@ public class DriveConstants {
 
     // Zeroed rotation values for each module to account for physical offset
     public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.358);
-    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.92); //Straight at 0.92
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.92);
     public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.96);
     public static final Rotation2d backRightZeroRotation = new Rotation2d(1.10);
 
@@ -72,10 +72,10 @@ public class DriveConstants {
     public static final double driveKs = 0.001;
     public static final double driveKv = 0.1;
     public static final double driveKi = 0.00;
-    public static final double driveSimP = 0.1;
-    public static final double driveSimD = 0.01;
-    public static final double driveSimKs = 0.15;
-    public static final double driveSimKv = 0.16;
+    public static final double driveSimP = 0.01;
+    public static final double driveSimD = 0.0001;
+    public static final double driveSimKs = 0.001;
+    public static final double driveSimKv = 0.0789;
 
     // Turn motor configuration
     public static final boolean turnInverted = false;
@@ -97,8 +97,8 @@ public class DriveConstants {
     public static final double turnKp = 0.10;  // Proportional gain
     public static final double turnKi = 0.00; // Small integral to address minor steady-state errors
     public static final double turnKd = 0.00;  // Derivative to dampen oscillations    
-    public static final double turnSimP = 1.5;
-    public static final double turnSimD = 0.1;
+    public static final double turnSimP = 2.00;
+    public static final double turnSimD = 0.001;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
