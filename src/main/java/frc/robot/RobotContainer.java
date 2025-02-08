@@ -17,9 +17,13 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.CommandBase;
+import frc.robot.commands.CoralOutput;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
@@ -34,6 +38,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * little robot logic should actually be handled in the {@link Robot} periodic methods (other than the scheduler calls).
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
+
+
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
@@ -43,7 +49,9 @@ public class RobotContainer {
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
     private final LoggedDashboardChooser<Command> autoChooser;
-
+    
+    
+   
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -88,8 +96,10 @@ public class RobotContainer {
                 vision = null; // No Vision in replay mode
 
                 break;
-        }
 
+           
+        }
+        
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 

@@ -63,7 +63,7 @@ public class ControllerBindings {
     private void configureTriggerBindings() {
         // Driver Controller Triggers (Primary)
         new Trigger(() -> driverController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
-            .whileTrue(Commands.run(() -> System.out.println("Driver Right Trigger Pushed")));
+            .whileTrue(Commands.run(() -> RobotActions.ShootCoral(null, null)));
     
         // Operator Controller Triggers (Secondary)
         new Trigger(() -> operatorController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
