@@ -1,173 +1,104 @@
 package frc.robot.util;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
-import frc.robot.LimelightHelpers;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.vision.VisionConstants;
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
-import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.RobotConfig;
-import org.littletonrobotics.junction.Logger;
-import static frc.robot.subsystems.drive.DriveConstants.ppConfig;
-
-import java.util.Arrays;
+import com.pathplanner.lib.path.GoalEndState;
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * DockingController is responsible for handling docking operations using vision data.
+ */
 public class DockingController {
+    private final Drive drive;
 
-    private final VisionIO vision;
-    private final Drive drivetrain;
-    private boolean dockingActive = false;
-
-    public DockingController(VisionIO vision, Drive drivetrain) {
-        this.vision = vision;
-        this.drivetrain = drivetrain;
+    public DockingController(Drive drive) {
+        this.drive = drive;
     }
 
-    public void initiateDocking() {
-        // Try to get the latest pose estimate from LimelightHelpers
-        Pose2d estimatedPose2d = LimelightHelpers.getBotPose2d_wpiBlue("limelight-sim");
-
-        if (estimatedPose2d != null && estimatedPose2d.getTranslation().getNorm() > 0) {
-            System.out.println("✅ Valid pose estimate from Limelight: " + estimatedPose2d);
-
-            // Reset odometry to align with the estimated pose
-            drivetrain.resetOdometry(estimatedPose2d);
-        } else {
-            System.out.println("❌ No valid pose estimate from Limelight, using odometry.");
+    /**
+     * Determines the closest AprilTag for docking and initiates path planning.
+     */
+    public void driveToClosestAprilTag() {
+        Pose2d currentPose = drive.getPose();
+        if (currentPose == null) {
+            System.out.println("DockingController - No pose data available yet.");
+            return;
         }
 
-        var robotPose = drivetrain.getPose();
-        System.out.println("Starting robot pose: " + robotPose);
-
-        Pose3d robotPose3d = new Pose3d(
-            robotPose.getTranslation().getX(),
-            robotPose.getTranslation().getY(),
-            0.0, // Z-coordinate is zero for 2D to 3D conversion
-            new Rotation3d(0.0, 0.0, robotPose.getRotation().getRadians())
-        );
-
-        // Find tags within range
-        var tagsInRange = vision.getTagsInRange(robotPose3d, 3.0);
-        if (!tagsInRange.isEmpty()) {
-            // Sort tags by distance to robot
-            tagsInRange.sort((tag1, tag2) -> Double.compare(
-                tag1.pose.getTranslation().getDistance(robotPose3d.getTranslation()),
-                tag2.pose.getTranslation().getDistance(robotPose3d.getTranslation())
-            ));
-
-            // Offset the target pose to stop 1 inch away from the tag
-            double offsetDistance = -Units.inchesToMeters(1.0);
-            Transform3d offsetTransform = new Transform3d(
-                new Pose3d(),
-                new Pose3d(offsetDistance, 0.0, 0.0, new Rotation3d())
-            );
-            Pose3d adjustedTargetPose3d = tagsInRange.get(0).pose.transformBy(offsetTransform);
-            Pose2d targetPose = adjustedTargetPose3d.toPose2d();
-
-            dockingActive = true;
-
-            // Debugging for target pose
-            System.out.println("AprilTag Pose: " + tagsInRange.get(0).pose);
-            System.out.println("Transformed Target Pose: " + adjustedTargetPose3d);
-
-            Logger.recordOutput("Docking/TargetPose", new double[] {
-                targetPose.getX(), targetPose.getY(), targetPose.getRotation().getDegrees()
+        Optional<AprilTag> closestTag = VisionConstants.aprilTagLayout.getTags().stream()
+            .min((tag1, tag2) -> {
+                double dist1 = currentPose.getTranslation().getDistance(tag1.pose.toPose2d().getTranslation());
+                double dist2 = currentPose.getTranslation().getDistance(tag2.pose.toPose2d().getTranslation());
+                return Double.compare(dist1, dist2);
             });
 
-            // Create docking path
-            createAndFollowPath(robotPose, targetPose);
+        if (closestTag.isPresent()) {
+            AprilTag tag = closestTag.get();
+            System.out.println("Closest AprilTag ID: " + tag.ID + " at " + tag.pose);
+
+            // Approach distance to give the robot room to align before docking
+            double approachDistance = 0.5;  // 0.5 meters (about 20 inches)
+            double offsetDistance = 0.0762; // 3 inches in meters
+
+            // Get the tag's pose and rotation
+            Pose2d tagPose = tag.pose.toPose2d();
+            Translation2d tagTranslation = tagPose.getTranslation();
+            Rotation2d tagRotation = tagPose.getRotation();
+
+            // Calculate the docking position by moving backward along the AprilTag's orientation
+            Translation2d dockingTranslation = tagTranslation.minus(
+                new Translation2d(offsetDistance * Math.cos(tagRotation.getRadians()),
+                                  offsetDistance * Math.sin(tagRotation.getRadians()))
+            );
+
+            // Calculate the approach position, further back from the docking position
+            Translation2d approachTranslation = tagTranslation.minus(
+                new Translation2d((offsetDistance + approachDistance) * Math.cos(tagRotation.getRadians()),
+                                  (offsetDistance + approachDistance) * Math.sin(tagRotation.getRadians()))
+            );
+
+            // Create Pose2d objects for docking and approach
+            Pose2d dockingPose = new Pose2d(dockingTranslation, tagRotation);
+            Pose2d approachPose = new Pose2d(approachTranslation, tagRotation);
+
+            // Create waypoints from current position to the offset docking position
+            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(currentPose, approachPose, dockingPose);
+            
+            // Define path constraints (adjust parameters as needed)
+            PathConstraints constraints = new PathConstraints(.0254, .0254, 0.05, 0.05, 12.0, false);
+
+            // Ensure the robot aligns perfectly with the AprilTag orientation at the end
+            GoalEndState goalEndState = new GoalEndState(0.0, tagRotation);  // Ensures alignment with the tag's angle
+            
+            // Create the PathPlannerPath
+            PathPlannerPath path = new PathPlannerPath(
+                waypoints,
+                constraints,
+                null, // IdealStartingState can be null if unknown
+                goalEndState
+            );
+            
+            // Log the generated path waypoints for debugging
+            System.out.println("Generated Path Waypoints:");
+            waypoints.forEach(waypoint -> System.out.println(waypoint.toString()));
+
+            // Create a FollowPathCommand to execute the path
+            Command pathCommand = AutoBuilder.followPath(path);
+            
+            // Execute the path
+            pathCommand.schedule();
         } else {
-            System.out.println("No visible AprilTags to dock to!");
-            dockingActive = false;
+            System.out.println("No AprilTags found in the layout.");
         }
-    }
-
-    private void createAndFollowPath(Pose2d startPose, Pose2d targetPose) {
-        // Define waypoints
-        List<Pose2d> poses = List.of(
-            startPose,
-            new Pose2d(
-                (startPose.getX() + targetPose.getX()) / 2, // Midpoint X
-                (startPose.getY() + targetPose.getY()) / 2, // Midpoint Y
-                startPose.getRotation()
-            ),
-            targetPose
-        );
-
-        // Debugging for waypoints
-        System.out.println("Waypoints: " + poses);
-
-        // Convert poses to waypoints
-        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
-
-        // Define constraints
-        PathConstraints constraints = new PathConstraints(
-            Units.feetToMeters(0.5), // Max linear velocity (M/S)
-            Units.feetToMeters(0.25), // Max linear acceleration (M/S^2)
-            Math.toRadians(45),      // Max angular velocity (Rad/S)
-            Math.toRadians(30),      // Max angular acceleration (Rad/S^2)
-            12.0,        // Nominal voltage (Volts)
-            false                    // Should constraints be unlimited
-        );
-
-        // Create path
-        PathPlannerPath dockingPath = new PathPlannerPath(
-            waypoints,
-            constraints,
-            null, // IdealStartingState (optional)
-            new GoalEndState(0.0, targetPose.getRotation()), // Stop and align to the target
-            false // Forward path
-        );
-
-        // Provide initial chassis speeds based on the robot's current state
-        ChassisSpeeds initialChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            0.0, // Initial velocity in X (m/s)
-            0.0, // Initial velocity in Y (m/s)
-            0.0, // Initial angular velocity (rad/s)
-            startPose.getRotation() // Current robot rotation
-        );
-
-        // Generate trajectory
-        RobotConfig robotConfig = ppConfig; // Use drivetrain-specific config
-        PathPlannerTrajectory trajectory = dockingPath.generateTrajectory(
-            initialChassisSpeeds, // Initial speeds
-            startPose.getRotation(),
-            robotConfig
-        );
-
-        // Debugging for trajectory
-        System.out.println("Generated Trajectory: " + trajectory);
-
-        // Follow trajectory
-        AutoBuilder.followPath(dockingPath).schedule();
-
-        // Test drivetrain response (manual test motion)
-        drivetrain.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-            0.1, // Test forward motion
-            0.0, // No strafe
-            0.0, // No rotation
-            startPose.getRotation()
-        ));
-    }
-
-    public boolean isDockingActive() {
-        return dockingActive;
-    }
-
-    public void completeDocking() {
-        dockingActive = false;
-        System.out.println("Docking complete.");
     }
 }

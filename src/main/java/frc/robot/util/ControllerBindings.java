@@ -1,12 +1,9 @@
 package frc.robot.util;
 
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -18,16 +15,14 @@ public class ControllerBindings {
     private final CommandXboxController driverController;
     private final CommandXboxController operatorController; 
     private final Drive drive;
-    private final VisionIO vision;
     private final ControllerProfiles.ControllerProfile activeProfile;
 
     private int lastPOV = -1; // Tracks the previous POV state
 
-    public ControllerBindings(CommandXboxController driverController,CommandXboxController operatorController, Drive driveSubsystem, VisionIO vision) {
+    public ControllerBindings(CommandXboxController driverController,CommandXboxController operatorController, Drive driveSubsystem) {
         this.driverController = driverController;
         this.operatorController = operatorController;
         this.drive = driveSubsystem;
-        this.vision = vision;
 
         // Detect and set the active controller profile
         this.activeProfile = ControllerProfiles.detectControllerProfile();
@@ -89,7 +84,7 @@ public class ControllerBindings {
     private void configureTriggerBindings() {
         // Driver Controller Triggers (Primary)
         new Trigger(() -> driverController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
-            .whileTrue(Commands.run(() -> System.out.println("Driver Right Trigger Pushed")));
+            .whileTrue(Commands.run(() -> RobotActions.ShootCoral(null, null)));
     
         // Operator Controller Triggers (Secondary)
         new Trigger(() -> operatorController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
@@ -121,7 +116,7 @@ public class ControllerBindings {
                 case 180: // Down
                     executePOVCommand("Down", new InstantCommand(() -> {
                         System.out.println("POV Down pressed!");
-                        RobotActions.executeDockToClosestAprilTag(drive, vision);
+                        RobotActions.executeDockToClosestAprilTag(drive);
                     }));
                     break;
                 case 270: // Left

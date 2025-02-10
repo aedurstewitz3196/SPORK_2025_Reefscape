@@ -16,7 +16,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -41,6 +40,10 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
         Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
         Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+
+        // SILENCE all the crazy controller connection warnings
+        edu.wpi.first.wpilibj.DriverStation.silenceJoystickConnectionWarning(true);
+
         switch (BuildConstants.DIRTY) {
             case 0:
                 Logger.recordMetadata("GitDirty", "All changes committed");
@@ -98,7 +101,6 @@ public class Robot extends LoggedRobot {
         // This must be called from the robot's periodic block in order for anything in
         // the Command-based framework to work.
         CommandScheduler.getInstance().run();
-        robotContainer.updateVisionInputs();
 
         // Return to normal thread priority
         Threads.setCurrentThreadPriority(false, 10);
@@ -163,7 +165,6 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically whilst in simulation. */
     @Override
     public void simulationPeriodic() {
-        SimulatedArena.getInstance().simulationPeriodic();
-        robotContainer.displaySimFieldToAdvantageScope();
+        robotContainer.updateSimulation();
     }
 }

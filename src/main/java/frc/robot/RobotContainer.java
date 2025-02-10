@@ -14,22 +14,20 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
-import edu.wpi.first.math.estimator.PoseEstimator;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.commands.CommandBase;
+import frc.robot.commands.CoralOutput;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
-import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import frc.robot.util.ControllerBindings;
-import frc.robot.util.StringCoderReader;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -40,16 +38,20 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * little robot logic should actually be handled in the {@link Robot} periodic methods (other than the scheduler calls).
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
+
+
 public class RobotContainer {
     // Subsystems
     private final Drive drive;
-    private final VisionIO vision;
+    private final Vision vision;
     private SwerveDriveSimulation driveSimulation = null;
     private final ControllerBindings controllerBindings;
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
     private final LoggedDashboardChooser<Command> autoChooser;
-
+    
+    
+   
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -80,7 +82,10 @@ public class RobotContainer {
                         new ModuleIOSim(driveSimulation.getModules()[2]),
                         new ModuleIOSim(driveSimulation.getModules()[3]));
 
-                vision = new VisionIOLimelightSim("limelight-sim", driveSimulation, new Transform3d());
+                vision = new Vision(
+                    drive,
+                    new VisionIOPhotonVisionSim(
+                            camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose));
 
                 break;
 
@@ -91,8 +96,10 @@ public class RobotContainer {
                 vision = null; // No Vision in replay mode
 
                 break;
-        }
 
+           
+        }
+        
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -105,7 +112,7 @@ public class RobotContainer {
         autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
-        controllerBindings = new ControllerBindings(driverController, operatorController, drive, vision);
+        controllerBindings = new ControllerBindings(driverController, operatorController, drive);
         controllerBindings.configure();
     }
 
@@ -127,10 +134,14 @@ public class RobotContainer {
         Logger.recordOutput("FieldSimulation/Notes", SimulatedArena.getInstance().getGamePiecesArrayByType("Note"));
     }
 
-    public void updateVisionInputs() {
-        if (vision != null) {
-            VisionIOInputs inputs = new VisionIOInputs();
-            vision.updateInputs(inputs);
-        }
+    public void updateSimulation() {
+        if (Constants.currentMode != Constants.Mode.SIM) return;
+
+        SimulatedArena.getInstance().simulationPeriodic();
+        Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+        Logger.recordOutput(
+                "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+        Logger.recordOutput(
+                "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     }
 }
