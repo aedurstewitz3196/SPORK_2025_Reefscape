@@ -15,23 +15,23 @@ import frc.robot.commands.ElevatorConstants;
 
 /** Utility class for executing predefined robot actions. */
 public class RobotActions {
-    static ElevatorCommands elevator;
+    //static ElevatorCommands elevator;
 
     public static void executeDockToClosestAprilTag(Drive drive) {
         new frc.robot.util.DockingController(drive).driveToClosestAprilTag();
     }
     // The functions below are for moving the elevator up and down to the level you want
     public static void movetoL1() {
-        elevator.set_height(ElevatorConstants.L1);
+        //elevator.set_height(ElevatorConstants.L1);
     }
     public static void movetoL2() {
-        elevator.set_height(ElevatorConstants.L2);
+        //elevator.set_height(ElevatorConstants.L2);
     }
     public static void movetoL3() {
-        elevator.set_height(ElevatorConstants.L3);
+        //elevator.set_height(ElevatorConstants.L3);
     }
     public static void movetoL4() {
-        elevator.set_height(ElevatorConstants.L4);
+        //elevator.set_height(ElevatorConstants.L4);
     }
     public static void ShootCoral(XboxController commandXboxController, PWMSparkMax shooterMotor) {
                     CoralOutput CoralOutput = new CoralOutput(shooterMotor, commandXboxController);

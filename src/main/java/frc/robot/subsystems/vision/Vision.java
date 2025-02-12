@@ -141,6 +141,7 @@ public class Vision extends SubsystemBase {
                 // Send vision observation
                 consumer.accept(
                         observation.pose().toPose2d(),
+                        observation.pose().getRotation().toRotation2d(),
                         observation.timestamp(),
                         VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
             }
@@ -177,7 +178,7 @@ public class Vision extends SubsystemBase {
 
     @FunctionalInterface
     public interface VisionConsumer {
-        void accept(Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs);
+        void accept(Pose2d visionRobotPoseMeters, Rotation2d visionRobotAngle, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs);
     }
 
     public int[] getDetectedTagIds(int cameraIndex) {
