@@ -22,11 +22,10 @@ import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
-
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -160,4 +159,19 @@ public class VisionIOLimelight implements VisionIO {
                         Units.degreesToRadians(rawLLArray[4]),
                         Units.degreesToRadians(rawLLArray[5])));
     }
+
+    public Optional<Rotation2d> getVisionYaw() {
+    for (var rawSample : megatag2Subscriber.readQueue()) { // Prioritize MegaTag2
+        if (rawSample.value.length >= 6) {
+            return Optional.of(Rotation2d.fromDegrees(rawSample.value[5])); // Yaw is at index 5
+        }
+    }
+    for (var rawSample : megatag1Subscriber.readQueue()) { // Fallback to MegaTag1
+        if (rawSample.value.length >= 6) {
+            return Optional.of(Rotation2d.fromDegrees(rawSample.value[5])); // Yaw is at index 5
+        }
+    }
+    return Optional.empty(); // No vision data available
+}
+
 }

@@ -1,7 +1,9 @@
 package frc.robot.util;
 
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIOLimelight;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -69,12 +71,18 @@ public class DockingController {
                                   (offsetDistance + approachDistance) * Math.sin(tagRotation.getRadians()))
             );
 
-            // Create Pose2d objects for docking and approach
+            // Create Pose2d objects for vision calculated robot pose, approach pose and target pose
+            Rotation2d visionRotation = RobotContainer.vision.getVisionIOLimelight()
+                .flatMap(VisionIOLimelight::getVisionYaw)
+                .orElse(RobotContainer.drive.getPose().getRotation());
+            Pose2d visionUpdatedPose = new Pose2d(currentPose.getTranslation(), visionRotation);
             Pose2d dockingPose = new Pose2d(dockingTranslation, tagRotation);
             Pose2d approachPose = new Pose2d(approachTranslation, tagRotation);
 
+            System.out.println("Vision calculated robot angle is " + visionRotation);
+
             // Create waypoints from current position to the offset docking position
-            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(currentPose, approachPose, dockingPose);
+            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(visionUpdatedPose, approachPose, dockingPose);
             
             // Define path constraints (adjust parameters as needed)
             PathConstraints constraints = new PathConstraints(.0254, .0254, 0.05, 0.05, 12.0, false);

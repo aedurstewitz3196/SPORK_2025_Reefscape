@@ -5,11 +5,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ElevatorConstants;
 import frc.robot.subsystems.drive.Drive;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj.Joystick;
-import frc.robot.util.RobotActions;
 
 public class ControllerBindings {
     private final CommandXboxController driverController;
