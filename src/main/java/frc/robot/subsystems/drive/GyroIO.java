@@ -27,4 +27,8 @@ public interface GyroIO {
     }
 
     public default void updateInputs(GyroIOInputs inputs) {}
+
+    public default void setAngleAdjustment(double offset) {
+        // Default: Do nothing (for non-NavX gyros)
+    }
 }

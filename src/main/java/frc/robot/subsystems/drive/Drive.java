@@ -311,4 +311,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     public double getMaxAngularSpeedRadPerSec() {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
+
+    public GyroIO getGyro() {
+        return gyroIO;
+    }
 }

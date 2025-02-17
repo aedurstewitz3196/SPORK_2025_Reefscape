@@ -15,6 +15,9 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import static frc.robot.subsystems.vision.VisionConstants.*;
+
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -107,6 +110,13 @@ public class RobotContainer {
         autoChooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
         autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+        // Configure NavX to offset determined by Limelight
+        RobotContainer.vision.getVisionIOLimelight()
+        .flatMap(VisionIOLimelight::getVisionYaw)
+        .ifPresent(visionYaw -> 
+            RobotContainer.drive.getGyro().setAngleAdjustment(visionYaw.getDegrees() - RobotContainer.drive.getPose().getRotation().getDegrees())
+        );
 
         // Configure the button bindings
         new ControllerBindings(driverController, operatorController, drive).configure();
