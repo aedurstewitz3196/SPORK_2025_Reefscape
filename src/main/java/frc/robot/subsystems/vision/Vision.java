@@ -96,17 +96,22 @@ public class Vision extends SubsystemBase {
 
             // Loop over pose observations
             for (var observation : inputs[cameraIndex].poseObservations) {
-                // Check whether to reject pose
-                boolean rejectPose = observation.tagCount() == 0 // Must have at least one tag
-                        || (observation.tagCount() == 1
-                                && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
-                        || Math.abs(observation.pose().getZ()) > maxZError // Must have realistic Z coordinate
-
-                        // Must be within the field boundaries
-                        || observation.pose().getX() < 0.0
-                        || observation.pose().getX() > aprilTagLayout.getFieldLength()
-                        || observation.pose().getY() < 0.0
-                        || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+                boolean rejectPose = false;
+                if (observation.tagCount() == 0) {
+                    //System.out.println("Reject: No tags, count: " + observation.tagCount());
+                    rejectPose = true;
+                } else if (observation.tagCount() == 1 && observation.ambiguity() > maxAmbiguity) {
+                    System.out.println("Reject: High ambiguity, ambiguity: " + observation.ambiguity());
+                    rejectPose = true;
+                } else if (Math.abs(observation.pose().getZ()) > maxZError) {
+                    System.out.println("Reject: Z error, Z: " + observation.pose().getZ());
+                    rejectPose = true;
+                } else if (observation.pose().getX() < 0.0 || observation.pose().getX() > aprilTagLayout.getFieldLength() ||
+                           observation.pose().getY() < 0.0 || observation.pose().getY() > aprilTagLayout.getFieldWidth()) {
+                    System.out.println("Reject: Out of bounds, X: " + observation.pose().getX() + 
+                                       ", Y: " + observation.pose().getY());
+                    rejectPose = true;
+                }
 
                 // Add pose to log
                 robotPoses.add(observation.pose());

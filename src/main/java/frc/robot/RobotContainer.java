@@ -22,8 +22,9 @@ import java.util.Set;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -117,9 +118,6 @@ public class RobotContainer {
 
         // Configure the button bindings
         new ControllerBindings(driverController, operatorController, drive).configure();
-
-        // Calibrate the Gryo from Vision Data
-        calibrateGyroWithVision().schedule();
     }
 
     public Command getAutonomousCommand() {
@@ -151,65 +149,31 @@ public class RobotContainer {
                 "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     }
 
-    public Command calibrateGyroWithVision() {
-    return new Command() {
-        private boolean calibrated = false;
-
-        @Override
-        public void initialize() {
-            calibrated = false;
-            System.out.println("Starting gyro calibration with Limelight...");
+    public void calibrateGyroWithVisionDirect() {
+        System.out.println("DIRECT CALIBRATION START");
+        if (vision == null) {
+            System.out.println("Vision subsystem not available");
+            return;
         }
-
-        @Override
-        public void execute() {
-            if (vision == null) {
-                System.out.println("Vision subsystem not available");
-                calibrated = true;
-                return;
-            }
-            Optional<VisionIOLimelight> limelightOptional = vision.getVisionIOLimelight();
-            if (limelightOptional.isPresent()) {
-                VisionIOLimelight limelight = limelightOptional.get();
-                Optional<Rotation2d> visionYaw = limelight.getVisionYaw();
-                if (visionYaw.isPresent()) {
-                    Rotation2d currentGyroAngle = drive.getRotation();
-                    double offset = currentGyroAngle.minus(visionYaw.get()).getDegrees();
-                    if (drive.getGyro() instanceof GyroIONavX) {
-                        ((GyroIONavX) drive.getGyro()).setAngleAdjustment(offset);
-                        System.out.println("Gyro calibrated with offset: " + offset + 
-                                          ", Vision yaw: " + visionYaw.get().getDegrees() + 
-                                          ", Gyro yaw: " + currentGyroAngle.getDegrees());
-                        calibrated = true;
-                    } else {
-                        System.out.println("Gyro is not GyroIONavX, cannot calibrate");
-                        calibrated = true;
-                    }
+        Optional<VisionIOLimelight> limelightOptional = vision.getVisionIOLimelight();
+        if (limelightOptional.isPresent()) {
+            VisionIOLimelight limelight = limelightOptional.get();
+            Optional<Rotation2d> visionYaw = limelight.getVisionYaw();
+            System.out.println("Vision yaw present: " + visionYaw.isPresent());
+            if (visionYaw.isPresent()) {
+                Rotation2d currentGyroAngle = drive.getRotation();
+                double offset = currentGyroAngle.minus(visionYaw.get()).getDegrees();
+                if (drive.getGyro() instanceof GyroIONavX) {
+                    ((GyroIONavX) drive.getGyro()).setAngleAdjustment(offset);
+                    System.out.println("Gyro calibrated with offset: " + offset);
+                } else {
+                    System.out.println("Gyro is not GyroIONavX, cannot calibrate");
                 }
             } else {
-                System.out.println("Limelight not available for calibration");
-                calibrated = true;
+                System.out.println("No vision yaw available");
             }
+        } else {
+            System.out.println("Limelight not available");
         }
-
-        @Override
-        public boolean isFinished() {
-            return calibrated;
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            if (!calibrated) {
-                System.out.println("Calibration failed: No valid vision data within timeout");
-            } else if (!interrupted) {
-                System.out.println("Calibration completed successfully");
-            }
-        }
-
-        @Override
-        public Set<Subsystem> getRequirements() {
-            return Collections.singleton(drive);
-        }
-    }.withTimeout(5.0);
-}
+    }
 }
