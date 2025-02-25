@@ -10,6 +10,7 @@ public class ControllerProfiles {
         public final int buttonX;
         public final int buttonB;
         public final int buttonA;
+        public final int buttonY;
         public final int rightTriggerAxis;
 
         public ControllerProfile(
@@ -19,6 +20,7 @@ public class ControllerProfiles {
                 int buttonX,
                 int buttonB,
                 int buttonA,
+                int buttonY,
                 int rightTriggerAxis) {
             this.leftYAxis = leftYAxis;
             this.leftXAxis = leftXAxis;
@@ -26,6 +28,7 @@ public class ControllerProfiles {
             this.buttonX = buttonX;
             this.buttonB = buttonB;
             this.buttonA = buttonA;
+            this.buttonY = buttonY;
             this.rightTriggerAxis = rightTriggerAxis;
         }
     }
@@ -39,7 +42,8 @@ public class ControllerProfiles {
             2, // Joystick Axes
             3,
             2,
-            1, // Buttons
+            1, 
+            0, // Buttons
             4);
 
     public static final ControllerProfile WINDOWS_WIRED_XBOX = new ControllerProfile(
@@ -48,7 +52,8 @@ public class ControllerProfiles {
             4, // Joystick Axes
             4,
             2,
-            1, // Buttons
+            1,
+            0, // Buttons
             4);
 
         public static final ControllerProfile ROBORIO2 = new ControllerProfile(
@@ -57,7 +62,8 @@ public class ControllerProfiles {
             4, // Joystick Axes
             4,
             2,
-            1, // Buttons
+            1,
+            0, // Buttons
             4);
 
     // Method to detect the current profile based on the operating system
