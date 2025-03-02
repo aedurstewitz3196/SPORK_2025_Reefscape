@@ -1,21 +1,13 @@
 package frc.robot.util;
 
-import frc.robot.commands.ElevatorConstants;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.CoralOutput;
 import frc.robot.subsystems.drive.Drive;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import frc.robot.util.ControllerProfiles;
-import frc.robot.util.ControllerProfiles.ControllerProfile;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.commands.ElevatorCommands;
-import frc.robot.commands.ElevatorConstants;
 
 
 /** Utility class for executing predefined robot actions. */
 public class RobotActions {
     //static ElevatorCommands elevator;
+    static CoralOutput shooter;
 
     public static void executeDockToClosestAprilTag(Drive drive) {
         new frc.robot.util.DockingController(drive).driveToClosestAprilTag();
@@ -33,7 +25,12 @@ public class RobotActions {
     public static void movetoL4() {
         //elevator.set_height(ElevatorConstants.L4);
     }
-    public static void ShootCoral(XboxController commandXboxController, PWMSparkMax shooterMotor) {
-                    CoralOutput CoralOutput = new CoralOutput(shooterMotor, commandXboxController);
+    public static void ShootCoral(double power) {
+        if (power >= 0.5 && power <= 0.8) {
+            shooter.shoot(0.5);
+        }
+        else if (power > 0.8) {
+            shooter.shoot(0.8);
+        }
     }
 }

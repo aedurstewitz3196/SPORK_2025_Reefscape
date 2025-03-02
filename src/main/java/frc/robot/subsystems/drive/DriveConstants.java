@@ -34,10 +34,10 @@ public class DriveConstants {
     // Open Advantagescope and read degree value for straight forward. Next convert that degree value to radians.
     // Depending on whether you want to zero from the left or right, add or subtract the radian value from the motor's ZeroRotation.
     // Reference value in intializer in ModuleIOSpark to determine accuracy(comment set there to indicate line)
-    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.358); 
-    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.92); //Straight at 0.92
-    public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.96);
-    public static final Rotation2d backRightZeroRotation = new Rotation2d(1.10);
+    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.358);// SwerveState = 0
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.92); //Straight at 0.92, SwerveState = 1
+    public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.96);// SwerveState = 2
+    public static final Rotation2d backRightZeroRotation = new Rotation2d(1.1);// SwerveState = 3
 
     // CAN IDs
     public static final int pigeonCanId = 9;

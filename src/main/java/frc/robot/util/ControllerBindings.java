@@ -35,9 +35,9 @@ public class ControllerBindings {
     private void configureButtonBindings() {
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
-                () -> driverController.getRawAxis(activeProfile.leftYAxis),  // Forward/backward
-                () -> driverController.getRawAxis(activeProfile.leftXAxis),  // Strafe
-                () -> -driverController.getRawAxis(activeProfile.rightXAxis)  // Rotation
+                () -> -driverController.getRawAxis(activeProfile.leftYAxis),  // Forward/backward
+                () -> -driverController.getRawAxis(activeProfile.leftXAxis),  // Strafe
+                () -> driverController.getRawAxis(activeProfile.rightXAxis)  // Rotation
         ));
 
 
@@ -54,6 +54,8 @@ public class ControllerBindings {
     }
     if (activeProfile.buttonA == 1){
         RobotActions.movetoL4();
+    
+
     }
 
             //Primary Controller face buttons
@@ -81,7 +83,7 @@ public class ControllerBindings {
     private void configureTriggerBindings() {
         // Driver Controller Triggers (Primary)
         new Trigger(() -> driverController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
-            .whileTrue(Commands.run(() -> RobotActions.ShootCoral(null, null)));
+            .whileTrue(Commands.run(() -> RobotActions.ShootCoral(driverController.getRawAxis(activeProfile.rightTriggerAxis))));
     
         // Operator Controller Triggers (Secondary)
         new Trigger(() -> operatorController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)

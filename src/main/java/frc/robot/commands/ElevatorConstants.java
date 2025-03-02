@@ -15,4 +15,7 @@ public class ElevatorConstants{
     public static final int coder_length = 80;
     public static final int coder_voltage = 5;
     public static final double voltage_to_distance_factor = coder_length / coder_voltage;
+
+
+    public static final int shooter_spark_channel = 1;
 }

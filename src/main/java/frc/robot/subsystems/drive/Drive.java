@@ -159,6 +159,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);
                 rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
             }
+        Rotation2d frontrotation = Rotation2d.fromDegrees(0); 
 
             // Apply update
             poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);

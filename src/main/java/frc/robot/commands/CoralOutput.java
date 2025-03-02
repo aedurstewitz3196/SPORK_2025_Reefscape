@@ -1,34 +1,16 @@
-
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class CoralOutput extends Command {
-    private final PWMSparkMax shooterMotor;
-    private final XboxController commandXboxController;
-
-    public CoralOutput(PWMSparkMax shooterMotor, XboxController commandXboxController) {
-        this.shooterMotor = shooterMotor;
-        this.commandXboxController = commandXboxController;
+    private final Spark shooterMotor;
+    public CoralOutput() {
+        shooterMotor = new Spark(ElevatorConstants.shooter_spark_channel);
     }
 
-    public void initialize() {}
-
-    public void execute() {
-        if (commandXboxController.getRightTriggerAxis() > 0.8) {
-            shooterMotor.set(1.0);
-        } else {
-            shooterMotor.set(0.0);
-        }
+    public void shoot(double power) {
+            shooterMotor.set(power);
     }
 
-    public void end(boolean interrupted) {
-        shooterMotor.set(0.0);
-    }
-
-    public boolean isFinished() {
-        return false;
-    }
 }
