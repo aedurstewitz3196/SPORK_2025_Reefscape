@@ -23,8 +23,8 @@ public class CoralOutput extends Command {
             shooterMotor.set(power);
     }
     public boolean elevatorstopper() {
-        if (!ShooterLazer.get()){
-            return true;
+        if (ShooterLazer.get() && ShooterLazer.get()){
+            return false;
         }
         return false;
     }

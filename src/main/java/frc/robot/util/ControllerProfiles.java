@@ -60,11 +60,11 @@ public class ControllerProfiles {
             1,
             0,
             4, // Joystick Axes
-            4,
+            3,
             2,
             1,
-            0, // Buttons
-            4);
+            4, // Buttons
+            3);
 
     // Method to detect the current profile based on the operating system
     public static ControllerProfile detectControllerProfile() {

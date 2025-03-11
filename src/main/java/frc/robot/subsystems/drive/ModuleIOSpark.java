@@ -171,7 +171,7 @@ public class ModuleIOSpark implements ModuleIO {
         double absolutePositionRad = absolutePosition * tau; // Convert to radians
         double zeroOffsetRad = zeroRotation.getRadians(); // Radians
         turnEncoder.setPosition(absolutePositionRad - zeroOffsetRad);
-        System.out.println("Module " + absoluteEncoder.getDeviceID() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
+        //System.out.println("Module " + absoluteEncoder.getDeviceID() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
     }
     private Rotation2d getTurnPosition() {
         return Rotation2d.fromRadians(turnEncoder.getPosition());
@@ -182,7 +182,6 @@ public class ModuleIOSpark implements ModuleIO {
         double setpoint = MathUtil.inputModulus(
             desiredRotation.getRadians(), turnPIDMinInput, turnPIDMaxInput
         );
-        System.out.println("Module " + absoluteEncoder.getDeviceID() + " setpoint: " + setpoint + " rad");
         turnController.setReference(setpoint, ControlType.kPosition);
     }
 
@@ -195,8 +194,10 @@ public class ModuleIOSpark implements ModuleIO {
         long currentTime = System.currentTimeMillis();
         // Log every 1s regardless of input (temporary workaround)
         if (currentTime - lastLogTime >= LOG_INTERVAL_MS) {
-            System.out.println("Module " + absoluteEncoder.getDeviceID() + 
-                " turn position: " + getTurnPosition().getRadians() + " radians");
+            //double absolutePosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble();
+            //System.out.println("Module " + absoluteEncoder.getDeviceID() + 
+            //" absolutePosition: " + absolutePosition + " rotations, " +
+            //" turn position: " + getTurnPosition().getRadians() + " radians");
             lastLogTime = currentTime;
         }
     }

@@ -19,8 +19,8 @@ public class DriveConstants {
     // Physical robot dimensions and capabilities
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
-    public static final double trackWidth = Units.inchesToMeters(23.75);
-    public static final double wheelBase = Units.inchesToMeters(23.75);
+    public static final double trackWidth = Units.inchesToMeters(23.50);
+    public static final double wheelBase = Units.inchesToMeters(23.50);
     public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     public static final double tau = Math.PI*2;
 
@@ -82,7 +82,6 @@ public class DriveConstants {
     public static final double driveSimKv = 0.0789;
 
     // Turn motor configuration
-    public static final boolean turnInverted = false;
     public static final int turnMotorCurrentLimit = 40; // Amperes
     public static final double turnMotorReduction = (150/7); // ~21.4286
     public static final DCMotor turnGearbox = DCMotor.getNEO(1);
@@ -105,7 +104,7 @@ public class DriveConstants {
     // Turn PID configuration
     // Drive PID and turn PID must have a certain ratio Turn:Drive should be 10:1 approximately
     // Try to set turn PID p to about 0.10 and the i and d to 0(or else it will go haywire)
-    public static final double turnKp = 0.10;  // Proportional gain
+    public static final double turnKp = 1.00;  // Proportional gain
     public static final double turnKi = 0.00; // Small integral to address minor steady-state errors
     public static final double turnKd = 0.00;  // Derivative to dampen oscillations    
     public static final double turnSimP = 2.00;

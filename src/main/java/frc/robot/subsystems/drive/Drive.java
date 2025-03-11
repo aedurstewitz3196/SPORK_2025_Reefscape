@@ -61,6 +61,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
+    private long lastLogTime = 0;
+    private static final long LOG_INTERVAL_MS = 1000; // 1 second
+
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -187,9 +190,14 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
         Logger.recordOutput("SwerveChassisSpeeds/Setpoints", speeds);
 
+        long currentTime = System.currentTimeMillis();
+
         // Send setpoints to modules
         for (int i = 0; i < 4; i++) {
-            System.out.println("Module " + i + " setpoint: " + setpointStates[i].angle.getRadians() + " rad");
+            if (currentTime - lastLogTime >= LOG_INTERVAL_MS) {
+                //System.out.println("Module " + i + " setpoint: " + setpointStates[i].angle.getRadians() + " rad");
+            }
+            lastLogTime = currentTime;
             modules[i].runSetpoint(setpointStates[i]);
         }
 

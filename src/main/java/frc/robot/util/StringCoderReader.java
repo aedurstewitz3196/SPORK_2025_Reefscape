@@ -31,6 +31,6 @@ public class StringCoderReader extends SubsystemBase {
     @Override
     public void periodic() {
         // Log the current distance for testing
-        System.out.println("String Coder Distance: " + getDistance() + " units");
+        //System.out.println("String Coder Distance: " + getDistance() + " units");
     }
 }

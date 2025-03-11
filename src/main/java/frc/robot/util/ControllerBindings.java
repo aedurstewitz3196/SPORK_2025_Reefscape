@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,6 +15,7 @@ public class ControllerBindings {
     private final CommandXboxController operatorController; 
     private final Drive drive;
     private final ControllerProfiles.ControllerProfile activeProfile;
+    private final RobotActions robotActions = new RobotActions();
 
     private int lastPOV = -1; // Tracks the previous POV state
 
@@ -45,30 +47,10 @@ public class ControllerBindings {
                 return Math.abs(x) > 0.1 ? x : 0; // Deadband 0.1
             },
             () -> {
-                double rotation = -driverController.getRawAxis(activeProfile.rightXAxis);
-                if (Math.abs(rotation) > 0.5) {
-                    System.out.println("Right X Input: " + rotation);
-                }
-                return Math.abs(rotation) > 0.1 ? rotation * 2.44 : 0; // Deadband 0.1, max 11.3 rad/s
+                double rotation = driverController.getRawAxis(activeProfile.rightXAxis);
+                return Math.abs(rotation) > 0.1 ? rotation :0;
             }
         ));
-
-    if (activeProfile.buttonX == 1){
-        RobotActions.movetoL1();
-    }
-    /*
-    if (activeProfile.buttonY == 1){
-        RobotActions.movetoL2();
-    }
-    */
-    if (activeProfile.buttonB == 1){
-        RobotActions.movetoL3();
-    }
-    if (activeProfile.buttonA == 1){
-        RobotActions.movetoL4();
-    
-
-    }
 
             //Primary Controller face buttons
         driverController.button(activeProfile.buttonA)
@@ -88,7 +70,7 @@ public class ControllerBindings {
             .whileTrue(Commands.run(() -> System.out.println("Operator B Button Pushed")));
 
         operatorController.button(activeProfile.buttonX)
-            .whileTrue(Commands.run(() -> System.out.println("Operator X Button Pushed")));
+            .onTrue(Commands.run(() -> robotActions.movetoL2()));
             }
     //Cannot press same DPad button twice, must press another DPad button before pressing again.
     //Doesn't need fix because you are pressing one button at a time anyways.
@@ -127,7 +109,7 @@ public class ControllerBindings {
                 case 180: // Down
                     executePOVCommand("Down", new InstantCommand(() -> {
                         System.out.println("POV Down pressed!");
-                        RobotActions.executeDockToClosestAprilTag(drive);
+                        //RobotActions.executeDockToClosestAprilTag(drive);
                     }));
                     break;
                 case 270: // Left
