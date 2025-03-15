@@ -16,6 +16,13 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.Timer;
+import frc.robot.commands.DriveCommands;
+import frc.robot.subsystems.drive.Drive;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -23,6 +30,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.littletonrobotics.urcl.URCL;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
@@ -33,6 +41,8 @@ public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private RobotContainer robotContainer;
     private boolean firstPeriodic = true;
+    private Drive drive;
+    private Timer Timer;
 
     public Robot() {
         // Record metadata
@@ -119,6 +129,17 @@ public class Robot extends LoggedRobot {
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
     public void autonomousInit() {
+        //LAST RESORT DOOOOO NOOOOOOT UUUUUSEE
+        //Timer.start();
+        //double currenttime = Timer.get();
+        //DoubleSupplier xsupp = () -> 0.0;
+        //DoubleSupplier ysupp = () -> - (1 - currenttime);
+        //DoubleSupplier osupp = () -> 0.0;
+        //while (currenttime <= 1) {
+        //    DriveCommands.joystickDrive(drive,xsupp,ysupp,osupp);
+        //}
+        //Timer.stop();
+        
         autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)

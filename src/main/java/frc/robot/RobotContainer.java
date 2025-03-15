@@ -15,6 +15,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -36,6 +37,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.CoralOutputSubsystem;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevatorSubsystem;
+import frc.robot.commands.SetElevatorHeightCommand;
+import frc.robot.commands.ShootCoralCommand;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.ControllerBindings;
@@ -61,16 +65,19 @@ public class RobotContainer {
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
     private final LoggedDashboardChooser<Command> autoChooser;
-    private final CoralOutputSubsystem CoralOutput = new CoralOutputSubsystem();
     private final Field2d field = new Field2d();
-
+    private ElevatorSubsystem elevator;
+    private CoralOutputSubsystem coralouter;
 
 
     
     public class Robot extends TimedRobot {
-        private double powerDouble = 0.6;
         public void robotInit() {
-            NamedCommands.registerCommand("CoralOutput", CoralOutput.shoot(0.6)); 
+            NamedCommands.registerCommand("CoralOutput", new ShootCoralCommand(coralouter, 0.5));
+            NamedCommands.registerCommand("Elevator L1", new SetElevatorHeightCommand(elevator, 3.3, false));
+            NamedCommands.registerCommand("Elevator L2", new SetElevatorHeightCommand(elevator, 14, false));
+            NamedCommands.registerCommand("Elevator L3", new SetElevatorHeightCommand(elevator, 28.5, false));
+            NamedCommands.registerCommand("Elevator L4", new SetElevatorHeightCommand(elevator, 56, false));
     }
 }
 
@@ -129,12 +136,14 @@ public class RobotContainer {
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
         // Set up SysId routines
-        autoChooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-        autoChooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-        autoChooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        autoChooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        autoChooser.addDefaultOption("UDY_BA_Mid_L1_1", new PathPlannerAuto("UDY_BA_Mid_L1_1"));
+        autoChooser.addOption("UDY_RA_MID_L1_1", new PathPlannerAuto("UDY_RA_MID_L1_1"));
+        autoChooser.addOption("UDY_BA_Mid_L4_1", new PathPlannerAuto("UDY_BA_Mid_L4_1"));
+        autoChooser.addOption("UDY_RA_Mid_L4_1", new PathPlannerAuto("UDY_RA_Mid_L4_1"));
+        autoChooser.addOption("UDY_BA_LW_L2_3", new PathPlannerAuto("UDY_BA_LW_L2_3"));
+        autoChooser.addOption("UDY_RA_LW_L2_3", new PathPlannerAuto("UDY_RA_LW_L2_3"));
+        autoChooser.addOption("UDY_BA_LW_L4_3", new PathPlannerAuto("UDY_BA_LW_L4_3"));
+        autoChooser.addOption("UDY_RA_LW_L4_3", new PathPlannerAuto("UDY_RA_LW_L4_3"));
 
         // Configure the button bindings
         new ControllerBindings(driverController, operatorController, drive).configure();
@@ -143,7 +152,6 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return autoChooser.get();
     }
-
     public void resetSimulationField() {
         if (Constants.currentMode != Constants.Mode.SIM) return;
 
