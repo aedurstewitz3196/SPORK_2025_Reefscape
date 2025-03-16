@@ -56,7 +56,7 @@ public class DriveCommands {
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
         // Square magnitude for more precise control
-        linearMagnitude = linearMagnitude * linearMagnitude;
+        linearMagnitude = (linearMagnitude * linearMagnitude)/4;
 
         // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
@@ -86,9 +86,10 @@ public class DriveCommands {
                             omega * drive.getMaxAngularSpeedRadPerSec());
                     boolean isFlipped = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red;
-                    speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    speeds = ChassisSpeeds.fromRobotRelativeSpeeds(
                             speeds,
-                            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation());
+                            isFlipped ? drive.getRotation() : drive.getRotation());
+                            //System.out.println("isFlipped is " + isFlipped);
                     drive.runVelocity(speeds);
                 },
                 drive);
@@ -130,6 +131,7 @@ public class DriveCommands {
                                     isFlipped
                                             ? drive.getRotation().plus(new Rotation2d(Math.PI))
                                             : drive.getRotation());
+                                System.out.println("isFlipped is " + isFlipped);
                             drive.runVelocity(speeds);
                         },
                         drive)

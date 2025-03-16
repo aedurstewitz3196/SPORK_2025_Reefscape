@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public class PrimeShooterCommand extends Command {
     private final CoralOutputSubsystem coralOutput;
-    private static final double PULL_SPEED = 0.5;
+    private static final double PULL_SPEED = 0.7;
 
     public PrimeShooterCommand(CoralOutputSubsystem coralOutput) {
         this.coralOutput = coralOutput;

@@ -36,8 +36,8 @@ public class DriveConstants {
     // Depending on whether you want to zero from the left or right, add or subtract the radian value from the motor's ZeroRotation.
     // Reference value in intializer in ModuleIOSpark to determine accuracy(comment set there to indicate line)
     public static final Rotation2d frontLeftZeroRotation = new Rotation2d(tau * 0.457);   // Encoder ID 1
-    public static final Rotation2d frontRightZeroRotation = new Rotation2d(tau * 0.654); // Encoder ID 3
-    public static final Rotation2d backLeftZeroRotation = new Rotation2d(tau * 0.082);    // Encoder ID 2
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(tau * 0.69); // Encoder ID 3
+    public static final Rotation2d backLeftZeroRotation = new Rotation2d(tau * 0.12);    // Encoder ID 2
     public static final Rotation2d backRightZeroRotation = new Rotation2d(tau * 0.746);   // Encoder ID 4
 
     // CAN IDs

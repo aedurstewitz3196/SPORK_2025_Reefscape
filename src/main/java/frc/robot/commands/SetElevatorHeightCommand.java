@@ -9,7 +9,7 @@ public class SetElevatorHeightCommand extends Command {
     private final boolean stopper;
     private final PIDController pidController;
 
-    private static final double KP = 0.3;
+    private static final double KP = 0.25;
     private static final double KI = 0.01;
     private static final double KD = 0.0;
 

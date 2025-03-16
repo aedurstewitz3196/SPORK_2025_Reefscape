@@ -68,7 +68,7 @@ public class ControllerBindings {
        
             // Secondary Controller face buttons
         operatorController.button(activeProfile.buttonA)
-            .onTrue(new SetElevatorHeightCommand(elevator, 56, false));
+            .onTrue(new SetElevatorHeightCommand(elevator, 49, false));
 
         operatorController.button(activeProfile.buttonB)
             .onTrue(new SetElevatorHeightCommand(elevator, 28.5, false));

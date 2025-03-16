@@ -25,7 +25,7 @@ public class StringCoderReader extends SubsystemBase {
      */
     public double getDistance() {
         double voltage = stringCoder.getVoltage(); // Get the current voltage
-        return voltage * voltageToDistanceFactor; // Convert voltage to distance
+        return (voltage * voltageToDistanceFactor); // Convert voltage to distance
     }
 
     @Override

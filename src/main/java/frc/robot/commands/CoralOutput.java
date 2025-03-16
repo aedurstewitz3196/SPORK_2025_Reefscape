@@ -17,7 +17,7 @@ public class CoralOutput extends Command {
     boolean isshooting = false;
 
     public CoralOutput() {
-        shooterMotor = new SparkMax(ElevatorConstants.shooter_spark_channel, MotorType.kBrushless);
+        shooterMotor = new SparkMax(11, MotorType.kBrushless);
         FunnelLazer = new DigitalInput(0);
         ShooterLazer = new DigitalInput(1);
         ExitLazer = new DigitalInput(2);
