@@ -8,7 +8,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-public class CoralOutput extends Command {
+public class CoralOutput2 extends Command {
     private final SparkMax shooterMotor;
     private final DigitalInput FunnelLazer;
     private final DigitalInput ShooterLazer;
@@ -16,7 +16,7 @@ public class CoralOutput extends Command {
     boolean ispulling = false;
     boolean isshooting = false;
 
-    public CoralOutput() {
+    public CoralOutput2() {
         shooterMotor = new SparkMax(ElevatorConstants.shooter_spark_channel, MotorType.kBrushless);
         FunnelLazer = new DigitalInput(0);
         ShooterLazer = new DigitalInput(1);
@@ -32,7 +32,7 @@ public class CoralOutput extends Command {
     }
     public void shoot(double power) {
         if (!isshooting){
-            shooterMotor.set(power);
+            shooterMotor.set(.5);
             isshooting = true;
         }
         isshooting = false;

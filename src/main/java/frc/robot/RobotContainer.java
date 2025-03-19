@@ -153,6 +153,8 @@ public class RobotContainer {
         autoChooser.addOption("UDY_RA_LW_L2_3", new PathPlannerAuto("UDY_RA_LW_L2_3"));
         autoChooser.addOption("UDY_BA_LW_L4_3", new PathPlannerAuto("UDY_BA_LW_L4_3"));
         autoChooser.addOption("UDY_RA_LW_L4_3", new PathPlannerAuto("UDY_RA_LW_L4_3"));
+        autoChooser.addOption("BlueMoveBack", new PathPlannerAuto("BlueMoveBack"));
+        autoChooser.addOption("RedMoveBack", new PathPlannerAuto("RedMoveBack"));
 
         // Configure the button bindings
         new ControllerBindings(driverController, operatorController, drive).configure();

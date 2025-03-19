@@ -48,17 +48,15 @@ public class CoralOutputSubsystem extends SubsystemBase {
         isPulling = false;
     }
 
-    public Command shoot(double power) {
-        return new InstantCommand(() ->  {
-        if (!isShooting) {
-            shooterMotor.set(power);
-            isShooting = true;
-        } else {
-            shooterMotor.set(0);
-            isShooting = false;
-        };
-    });
-}
+    public void shoot(double power) {
+            if (!isShooting) {
+                shooterMotor.set(.5);
+                isShooting = true;
+            } else {
+                shooterMotor.set(0);
+                isShooting = false;
+            };
+    }
 
     public boolean isShooterLazerBlocked() {
         return !shooterLazer.get(); // False = blocked for break-beam

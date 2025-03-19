@@ -2,14 +2,14 @@ package frc.robot.util;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.commands.CoralOutput;
+import frc.robot.commands.CoralOutput2;
 import frc.robot.subsystems.drive.Drive;
 
 
 /** Utility class for executing predefined robot actions. */
 public class RobotActions {
     //static ElevatorCommands elevator;
-    static CoralOutput shooter;
+    static CoralOutput2 shooter;
 
     public static void executeDockToClosestAprilTag(Drive drive) {
         new frc.robot.util.DockingController(drive).driveToClosestAprilTag();

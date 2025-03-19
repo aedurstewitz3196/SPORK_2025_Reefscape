@@ -51,7 +51,7 @@ public class ControllerBindings {
                 return Math.abs(x) > 0.1 ? x : 0; // Deadband 0.1
             },
             () -> {
-                double rotation = -driverController.getRawAxis(activeProfile.rightXAxis);
+                double rotation = driverController.getRawAxis(activeProfile.rightXAxis);
                 return Math.abs(rotation) > 0.1 ? rotation :0;
             }
         ));

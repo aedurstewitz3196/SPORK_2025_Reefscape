@@ -88,7 +88,7 @@ public class DriveCommands {
                             && DriverStation.getAlliance().get() == Alliance.Red;
                     speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                             speeds,
-                            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation());
+                            isFlipped ? drive.getRotation() : drive.getRotation());
                     drive.runVelocity(speeds);
                 },
                 drive);
