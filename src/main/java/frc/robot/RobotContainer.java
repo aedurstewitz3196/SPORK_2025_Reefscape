@@ -19,37 +19,22 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
-
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Optional;
-import java.util.Set;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.CoralOutputSubsystem;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ElevatorSubsystem;
-import frc.robot.commands.SetElevatorHeightCommand;
-import frc.robot.commands.ShootCoralCommand;
 import frc.robot.commands.ElevatorSubsystem;
 import frc.robot.commands.SetElevatorHeightCommand;
 import frc.robot.commands.ShootCoralCommand;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import frc.robot.util.ControllerBindings;
-import frc.robot.util.RobotActions;
-import frc.robot.commands.CoralOutputSubsystem;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;

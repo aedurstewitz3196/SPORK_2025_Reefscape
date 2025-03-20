@@ -51,7 +51,7 @@ public class ControllerBindings {
                 return Math.abs(x) > 0.1 ? x : 0; // Deadband 0.1
             },
             () -> {
-                double rotation = driverController.getRawAxis(activeProfile.rightXAxis);
+                double rotation = -driverController.getRawAxis(activeProfile.rightXAxis);
                 return Math.abs(rotation) > 0.1 ? rotation :0;
             }
         ));
@@ -90,6 +90,9 @@ public class ControllerBindings {
         new Trigger(() -> operatorController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
             .onTrue(new ShootCoralCommand(coralOutput,0.6)
             .andThen(new SetElevatorHeightCommand(elevator, 3.3, false)));
+
+        new Trigger(() -> operatorController.getRawAxis(activeProfile.leftTriggerAxis) > 0.5)
+            .onTrue(new ShootCoralCommand(coralOutput,-0.6));
         
             // Primary Controller DPad Setttings
         new Trigger(() -> {

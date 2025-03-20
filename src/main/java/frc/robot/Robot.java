@@ -17,12 +17,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
-
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -96,7 +91,7 @@ public class Robot extends LoggedRobot {
         Logger.start();
 
         robotContainer = new RobotContainer();
-        robotContainer.calibrateGyroWithVisionDirect();
+        //robotContainer.calibrateGyroWithVisionDirect();
     }
 
     /** This function is called periodically during all modes. */

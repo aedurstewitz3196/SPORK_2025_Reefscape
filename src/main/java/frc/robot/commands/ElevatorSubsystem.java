@@ -11,7 +11,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         public static final int spark_channel_ten = 10;
         public static final int coder_port = 0;
         public static final double voltage_to_distance_factor = 80/5;
-        public static final double elevator_speed = 0.35;
+        public static final double elevator_speed = 0.4;
         public static final double error = 0.5;
     }
 

@@ -20,6 +20,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -96,17 +97,10 @@ public class ModuleIOSpark implements ModuleIO {
         driveController = driveSpark.getClosedLoopController();
         turnController = turnSpark.getClosedLoopController();
 
-        // Configure drive motor
-        configureDriveMotor();
-
-        // Configure turn motor
-        configureTurnMotor();
-
-        // Configure CANcoder
         configureCANcoder();
-
-        // Initialize turn offset
         initializeTurnOffset();
+        configureDriveMotor();
+        configureTurnMotor();
     }
 
     private void configureCANcoder() {
@@ -171,7 +165,7 @@ public class ModuleIOSpark implements ModuleIO {
         double absolutePositionRad = absolutePosition * tau; // Convert to radians
         double zeroOffsetRad = zeroRotation.getRadians(); // Radians
         turnEncoder.setPosition(absolutePositionRad - zeroOffsetRad);
-        //System.out.println("Module " + absoluteEncoder.getDeviceID() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
+        System.out.println("Module " + absoluteEncoder.getDeviceID() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
     }
     private Rotation2d getTurnPosition() {
         return Rotation2d.fromRadians(turnEncoder.getPosition());
@@ -190,16 +184,6 @@ public class ModuleIOSpark implements ModuleIO {
         inputs.drivePositionRad = driveEncoder.getPosition();
         inputs.driveVelocityRadPerSec = driveEncoder.getVelocity();
         inputs.turnPosition = getTurnPosition();
-
-        long currentTime = System.currentTimeMillis();
-        // Log every 1s regardless of input (temporary workaround)
-        if (currentTime - lastLogTime >= LOG_INTERVAL_MS) {
-            //double absolutePosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble();
-            //System.out.println("Module " + absoluteEncoder.getDeviceID() + 
-            //" absolutePosition: " + absolutePosition + " rotations, " +
-            //" turn position: " + getTurnPosition().getRadians() + " radians");
-            lastLogTime = currentTime;
-        }
     }
 
     @Override

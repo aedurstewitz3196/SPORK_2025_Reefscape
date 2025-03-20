@@ -50,7 +50,7 @@ public class CoralOutputSubsystem extends SubsystemBase {
 
     public void shoot(double power) {
             if (!isShooting) {
-                shooterMotor.set(.5);
+                shooterMotor.set(power);
                 isShooting = true;
             } else {
                 shooterMotor.set(0);

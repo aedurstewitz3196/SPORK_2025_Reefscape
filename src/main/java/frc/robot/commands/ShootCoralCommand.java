@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.commands.SetElevatorHeightCommand;
 
 public class ShootCoralCommand extends Command {
     private final CoralOutputSubsystem coralOutput;
