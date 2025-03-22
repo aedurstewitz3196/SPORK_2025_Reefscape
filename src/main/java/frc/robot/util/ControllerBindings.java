@@ -88,11 +88,11 @@ public class ControllerBindings {
     
         // Operator Controller Triggers (Secondary)
         new Trigger(() -> operatorController.getRawAxis(activeProfile.rightTriggerAxis) > 0.5)
-            .onTrue(new ShootCoralCommand(coralOutput,0.6)
+            .onTrue(new ShootCoralCommand(coralOutput,0.6, false)
             .andThen(new SetElevatorHeightCommand(elevator, 3.3, false)));
 
         new Trigger(() -> operatorController.getRawAxis(activeProfile.leftTriggerAxis) > 0.5)
-            .onTrue(new ShootCoralCommand(coralOutput,-0.6));
+            .onTrue(new ShootCoralCommand(coralOutput,-0.6, true));
         
             // Primary Controller DPad Setttings
         new Trigger(() -> {

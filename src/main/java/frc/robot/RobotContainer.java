@@ -60,19 +60,6 @@ public class RobotContainer {
     private CoralOutputSubsystem coralouter;
 
 
-    
-    public class Robot extends TimedRobot {
-        @Override
-        public void robotInit() {
-            // Register your commands in NamedCommands (which stores them as Supplier<Command>)
-            NamedCommands.registerCommand("CoralOutput", new ShootCoralCommand(coralouter, 0.6));
-            NamedCommands.registerCommand("Elevator L1", new SetElevatorHeightCommand(elevator, 3.3, false));
-            NamedCommands.registerCommand("Elevator L2", new SetElevatorHeightCommand(elevator, 14, false));
-            NamedCommands.registerCommand("Elevator L3", new SetElevatorHeightCommand(elevator, 28.5, false));
-            NamedCommands.registerCommand("Elevator L4", new SetElevatorHeightCommand(elevator, 56, false));
-        }   
-}
-
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
@@ -128,8 +115,8 @@ public class RobotContainer {
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
         // Set up SysId routines
-        autoChooser.addDefaultOption("UDY_BA_Mid_L1_1", new PathPlannerAuto("UDY_BA_Mid_L1_1"));
-        autoChooser.addOption("UDY_RA_MID_L1_1", new PathPlannerAuto("UDY_RA_MID_L1_1"));
+        // autoChooser.addDefaultOption("UDY_BA_Mid_L1_1", new PathPlannerAuto("UDY_BA_Mid_L1_1"));
+        /*autoChooser.addOption("UDY_RA_MID_L1_1", new PathPlannerAuto("UDY_RA_MID_L1_1"));
         autoChooser.addOption("UDY_BA_LW_L1_3", new PathPlannerAuto("UDY_BA_LW_L1_3"));
         autoChooser.addOption("UDY_RA_LW_L1_3", new PathPlannerAuto("UDY_RA_LW_L1_3"));
         autoChooser.addOption("UDY_BA_Mid_L4_1", new PathPlannerAuto("UDY_BA_Mid_L4_1"));
@@ -137,9 +124,19 @@ public class RobotContainer {
         autoChooser.addOption("UDY_BA_LW_L2_3", new PathPlannerAuto("UDY_BA_LW_L2_3"));
         autoChooser.addOption("UDY_RA_LW_L2_3", new PathPlannerAuto("UDY_RA_LW_L2_3"));
         autoChooser.addOption("UDY_BA_LW_L4_3", new PathPlannerAuto("UDY_BA_LW_L4_3"));
-        autoChooser.addOption("UDY_RA_LW_L4_3", new PathPlannerAuto("UDY_RA_LW_L4_3"));
+        autoChooser.addOption("UDY_RA_LW_L4_3", new PathPlannerAuto("UDY_RA_LW_L4_3")); */
         autoChooser.addOption("BlueMoveBack", new PathPlannerAuto("BlueMoveBack"));
         autoChooser.addOption("RedMoveBack", new PathPlannerAuto("RedMoveBack"));
+        autoChooser.addOption("POS_RA_Middle_1", new PathPlannerAuto("POS_RA_Middle_1"));
+        autoChooser.addOption("POS_BA_Middle_1", new PathPlannerAuto("POS_BA_Middle_1"));
+
+        // Register your commands in NamedCommands (which stores them as Supplier<Command>)
+        /* NamedCommands.registerCommand("CoralOutput", new ShootCoralCommand(coralouter, 0.6, false));
+        NamedCommands.registerCommand("Elevator L1", new SetElevatorHeightCommand(elevator, 3.3, false));
+        NamedCommands.registerCommand("Elevator L2", new SetElevatorHeightCommand(elevator, 14, false));
+        NamedCommands.registerCommand("Elevator L3", new SetElevatorHeightCommand(elevator, 28.5, false));
+        NamedCommands.registerCommand("Elevator L4", new SetElevatorHeightCommand(elevator, 56, false)); */
+
 
         // Configure the button bindings
         new ControllerBindings(driverController, operatorController, drive).configure();

@@ -7,12 +7,14 @@ public class ShootCoralCommand extends Command {
     private final CoralOutputSubsystem coralOutput;
     private final double shootPower;
     private final Timer timer;
-    private static final double SHOOT_DURATION = 0.5; // Seconds to run motor (adjust as needed)
+    private final boolean runLong;
+    private double SHOOT_DURATION = 0.5; // Seconds to run motor (adjust as needed)
 
-    public ShootCoralCommand(CoralOutputSubsystem coralouter, double shootPower) {
+    public ShootCoralCommand(CoralOutputSubsystem coralouter, double shootPower, boolean runLong) {
         this.coralOutput = coralouter;
         this.shootPower = shootPower;
         this.timer = new Timer();
+        this.runLong = runLong;
         addRequirements(coralouter);
     }
 
@@ -20,6 +22,11 @@ public class ShootCoralCommand extends Command {
     public void initialize() {
         timer.reset();
         timer.start();
+
+        if (runLong) {
+            SHOOT_DURATION = SHOOT_DURATION + 3;
+        }
+
         coralOutput.shoot(shootPower); // Start shooting
         System.out.println("Firing coral at power: " + shootPower);
     }
