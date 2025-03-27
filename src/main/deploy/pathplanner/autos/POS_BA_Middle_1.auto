@@ -19,13 +19,7 @@
         {
           "type": "named",
           "data": {
-            "name": "ElevatorL1"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "CoralOutput"
+            "name": "ElevatorL2"
           }
         }
       ]

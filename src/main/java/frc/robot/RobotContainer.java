@@ -136,6 +136,9 @@ public class RobotContainer {
         autoChooser.addOption("RedMoveBack", new PathPlannerAuto("RedMoveBack"));
         autoChooser.addOption("POS_RA_Middle_1", new PathPlannerAuto("POS_RA_Middle_1"));
         autoChooser.addOption("POS_BA_Middle_1", new PathPlannerAuto("POS_BA_Middle_1"));
+        autoChooser.addOption("180BlueAuto_L1_1Coral", new PathPlannerAuto("180BlueAuto_L1_1Coral"));
+        autoChooser.addOption("180RedAuto_L1_1Coral", new PathPlannerAuto("180RedAuto_L1_1Coral"));
+
 
 
         // Configure the button bindings
