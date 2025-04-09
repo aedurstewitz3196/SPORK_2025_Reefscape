@@ -71,9 +71,9 @@ public class DriveConstants {
         (2 * Math.PI * wheelRadiusMeters) / (60.0 * driveMotorReduction); // Sensor RPM -> rad/sec
 
     // Drive PID configuration
-    public static final double driveKp = 0.01;   // 0.06
+    public static final double driveKp = 0.05;   // 0.06
     public static final double driveKi = 0.00;
-    public static final double driveKd = 0.00;   // 0.007
+    public static final double driveKd = 0.005;   // 0.007
     public static final double driveKs = 0.001;
     public static final double driveKv = 0.1;
     public static final double driveSimP = 0.01;

@@ -24,11 +24,13 @@ import java.util.Optional;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.CoralOutputSubsystem;
+import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorSubsystem;
 import frc.robot.commands.SetElevatorHeightCommand;
 import frc.robot.commands.ShootCoralCommand;
@@ -52,8 +54,8 @@ public class RobotContainer {
     public static Drive drive;
     public static Vision vision;
     private SwerveDriveSimulation driveSimulation = null;
-    private final CommandXboxController driverController = new CommandXboxController(0);
-    private final CommandXboxController operatorController = new CommandXboxController(1);
+    private final XboxController driverController = new XboxController(0);
+    private final XboxController operatorController = new XboxController(1);
     private final LoggedDashboardChooser<Command> autoChooser;
     private final Field2d field = new Field2d();
     private ElevatorSubsystem elevator = new ElevatorSubsystem();
@@ -140,9 +142,8 @@ public class RobotContainer {
         autoChooser.addOption("180RedAuto_L1_1Coral", new PathPlannerAuto("180RedAuto_L1_1Coral"));
 
 
-
         // Configure the button bindings
-        new ControllerBindings(driverController, operatorController, drive, elevator, coralouter).configure();
+        new ControllerBindings(driverController, operatorController, drive, elevator, coralouter);
     }
 
     public Command getAutonomousCommand() {
