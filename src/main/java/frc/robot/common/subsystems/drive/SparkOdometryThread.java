@@ -23,6 +23,8 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.DoubleSupplier;
 
+import frc.robot.GlobalConstants.driveConstants;
+
 /**
  * Provides an interface for asynchronously reading high-frequency measurements to a set of queues.
  *
@@ -53,7 +55,7 @@ public class SparkOdometryThread {
 
     public void start() {
         if (!timestampQueues.isEmpty()) {
-            notifier.startPeriodic(1.0 / DriveConstants_SporkBob.odometryFrequency);
+            notifier.startPeriodic(1.0 / driveConstants.odometryFrequency);
         }
     }
 

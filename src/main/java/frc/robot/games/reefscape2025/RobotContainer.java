@@ -32,7 +32,7 @@ import frc.robot.common.subsystems.drive.*;
 import frc.robot.common.subsystems.vision.*;
 import frc.robot.games.reefscape2025.commands.SetElevatorHeightCommand;
 import frc.robot.games.reefscape2025.commands.ShootCoralCommand;
-import frc.robot.games.reefscape2025.subsystems.drive.DriveConstants_SporkBob;
+import frc.robot.games.reefscape2025.subsystems.drive.DriveConstants;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -79,7 +79,7 @@ public class RobotContainer {
 
             case SIM:
                 // create a maple-sim swerve drive simulation instance
-                this.driveSimulation = new SwerveDriveSimulation(DriveConstants_SporkBob.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+                this.driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
                 
                 // add the simulated drivetrain to the simulation field
                 SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);

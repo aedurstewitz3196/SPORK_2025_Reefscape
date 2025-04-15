@@ -19,7 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 
-import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants_SporkBob.*;
+import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants.*;
 
 import org.littletonrobotics.junction.Logger;
 

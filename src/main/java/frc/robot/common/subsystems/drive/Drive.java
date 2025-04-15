@@ -14,7 +14,7 @@
 package frc.robot.common.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants_SporkBob.*;
+import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;

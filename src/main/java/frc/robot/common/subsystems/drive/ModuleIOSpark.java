@@ -20,15 +20,14 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkClosedLoopController;
-
-import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants_SporkBob.*;
-
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+
+import frc.robot.GlobalConstants.driveConstants;
 
 /**
  * Updated Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
@@ -51,19 +50,19 @@ public class ModuleIOSpark implements ModuleIO {
 
     public ModuleIOSpark(int module) {
         zeroRotation = switch (module) {
-            case 0 -> frontLeftZeroRotation;
-            case 1 -> frontRightZeroRotation;
-            case 2 -> backLeftZeroRotation;
-            case 3 -> backRightZeroRotation;
+            case 0 -> driveConstants.frontLeftZeroRotation;
+            case 1 -> driveConstants.frontRightZeroRotation;
+            case 2 -> driveConstants.backLeftZeroRotation;
+            case 3 -> driveConstants.backRightZeroRotation;
             default -> new Rotation2d();
         };
 
         driveSpark = new SparkMax(
             switch (module) {
-                case 0 -> frontLeftDriveCanId;
-                case 1 -> frontRightDriveCanId;
-                case 2 -> backLeftDriveCanId;
-                case 3 -> backRightDriveCanId;
+                case 0 -> driveConstants.frontLeftDriveCanId;
+                case 1 -> driveConstants.frontRightDriveCanId;
+                case 2 -> driveConstants.backLeftDriveCanId;
+                case 3 -> driveConstants.backRightDriveCanId;
                 default -> 0;
             },
             MotorType.kBrushless
@@ -71,10 +70,10 @@ public class ModuleIOSpark implements ModuleIO {
 
         turnSpark = new SparkMax(
             switch (module) {
-                case 0 -> frontLeftTurnCanId;
-                case 1 -> frontRightTurnCanId;
-                case 2 -> backLeftTurnCanId;
-                case 3 -> backRightTurnCanId;
+                case 0 -> driveConstants.frontLeftTurnCanId;
+                case 1 -> driveConstants.frontRightTurnCanId;
+                case 2 -> driveConstants.backLeftTurnCanId;
+                case 3 -> driveConstants.backRightTurnCanId;
                 default -> 0;
             },
             MotorType.kBrushless
@@ -82,10 +81,10 @@ public class ModuleIOSpark implements ModuleIO {
 
         absoluteEncoder = new CANcoder(
             switch (module) {
-                case 0 -> frontLeftEncoderCanId;
-                case 1 -> frontRightEncoderCanId;
-                case 2 -> backLeftEncoderCanId;
-                case 3 -> backRightEncoderCanId;
+                case 0 -> driveConstants.frontLeftEncoderCanId;
+                case 1 -> driveConstants.frontRightEncoderCanId;
+                case 2 -> driveConstants.backLeftEncoderCanId;
+                case 3 -> driveConstants.backRightEncoderCanId;
                 default -> 0;
             }
         );
@@ -112,17 +111,17 @@ public class ModuleIOSpark implements ModuleIO {
         var driveConfig = new com.revrobotics.spark.config.SparkMaxConfig();
         driveConfig
             .idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kBrake)
-            .smartCurrentLimit(driveMotorCurrentLimit)
+            .smartCurrentLimit(driveConstants.driveMotorCurrentLimit)
             .inverted(true)
             .voltageCompensation(12.0);
 
         driveConfig.encoder
-            .positionConversionFactor(driveEncoderPositionFactor)
-            .velocityConversionFactor(driveEncoderVelocityFactor);
+            .positionConversionFactor(driveConstants.driveEncoderPositionFactor)
+            .velocityConversionFactor(driveConstants.driveEncoderVelocityFactor);
 
         driveConfig.closedLoop
             .feedbackSensor(com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-            .pidf(driveKp, driveKi, driveKd, 0.0);
+            .pidf(driveConstants.driveKp, driveConstants.driveKi, driveConstants.driveKd, 0.0);
 
         driveSpark.configure(driveConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
     }
@@ -131,26 +130,26 @@ public class ModuleIOSpark implements ModuleIO {
         var turnConfig = new com.revrobotics.spark.config.SparkMaxConfig();
         turnConfig
             .idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kBrake)
-            .smartCurrentLimit(turnMotorCurrentLimit)
+            .smartCurrentLimit(driveConstants.turnMotorCurrentLimit)
             .inverted(true)
             .voltageCompensation(12.0);
     
         turnConfig.encoder
-            .positionConversionFactor(turnEncoderPositionFactor) // Apply gear reduction correction
-            .velocityConversionFactor(turnEncoderVelocityFactor); // Correct velocity scaling
+            .positionConversionFactor(driveConstants.turnEncoderPositionFactor) // Apply gear reduction correction
+            .velocityConversionFactor(driveConstants.turnEncoderVelocityFactor); // Correct velocity scaling
     
         turnConfig.closedLoop
             .feedbackSensor(com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder)
-            .pidf(turnKp, turnKi, turnKd, 0.0)
+            .pidf(driveConstants.turnKp, driveConstants.turnKi, driveConstants.turnKd, 0.0)
             .positionWrappingEnabled(true)
-            .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput);
+            .positionWrappingInputRange(driveConstants.turnPIDMinInput, driveConstants.turnPIDMaxInput);
     
         turnSpark.configure(turnConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
     }    
 
     private void initializeTurnOffset() {
         double absolutePosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble(); // Rotations (0.0 to 1.0)
-        double absolutePositionRad = absolutePosition * tau; // Convert to radians
+        double absolutePositionRad = absolutePosition * driveConstants.tau; // Convert to radians
         double zeroOffsetRad = zeroRotation.getRadians(); // Radians
         turnEncoder.setPosition(absolutePositionRad - zeroOffsetRad);
         System.out.println("Module " + absoluteEncoder.getDeviceID() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
@@ -162,7 +161,7 @@ public class ModuleIOSpark implements ModuleIO {
     @Override
     public void setTurnPosition(Rotation2d desiredRotation) {
         double setpoint = MathUtil.inputModulus(
-            desiredRotation.getRadians(), turnPIDMinInput, turnPIDMaxInput
+            desiredRotation.getRadians(), driveConstants.turnPIDMinInput, driveConstants.turnPIDMaxInput
         );
         turnController.setReference(setpoint, ControlType.kPosition);
     }
@@ -176,7 +175,7 @@ public class ModuleIOSpark implements ModuleIO {
 
     @Override
     public void setDriveVelocity(double velocityRadPerSec) {
-        double feedforward = driveKs * Math.signum(velocityRadPerSec) + driveKv * velocityRadPerSec;
+        double feedforward = driveConstants.driveKs * Math.signum(velocityRadPerSec) + driveConstants.driveKv * velocityRadPerSec;
         driveController.setReference(
             velocityRadPerSec,
             ControlType.kVelocity,
@@ -189,7 +188,7 @@ public class ModuleIOSpark implements ModuleIO {
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-            driveEncoder.getPosition() * driveEncoderPositionFactor,
+            driveEncoder.getPosition() * driveConstants.driveEncoderPositionFactor,
             getTurnPosition()
         );
     }
@@ -197,7 +196,7 @@ public class ModuleIOSpark implements ModuleIO {
     @Override
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-            driveEncoder.getVelocity() * driveEncoderVelocityFactor,
+            driveEncoder.getVelocity() * driveConstants.driveEncoderVelocityFactor,
             getTurnPosition()
         );
     }

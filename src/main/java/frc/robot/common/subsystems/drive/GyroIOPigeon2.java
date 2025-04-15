@@ -23,7 +23,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
-import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants_SporkBob.*;
+import static frc.robot.games.reefscape2025.subsystems.drive.DriveConstants.*;
 
 import java.util.Queue;
 
