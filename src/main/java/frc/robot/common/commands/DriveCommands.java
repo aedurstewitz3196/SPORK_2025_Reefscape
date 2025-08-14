@@ -87,9 +87,11 @@ public class DriveCommands {
                             omega * drive.getMaxAngularSpeedRadPerSec());
                     boolean isFlipped = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red;
-                    speeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+                    speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                             speeds,
-                            isFlipped ? drive.getRotation() : drive.getRotation());
+                            isFlipped
+                                    ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                                    : drive.getRotation());
                             //System.out.println("isFlipped is " + isFlipped);
                     drive.runVelocity(speeds);
                 },
