@@ -95,9 +95,10 @@ public class ModuleIOSpark implements ModuleIO {
         turnController = turnSpark.getClosedLoopController();
 
         configureCANcoder();
-        initializeTurnOffset();
-        configureDriveMotor();
+        // Configure conversion factors BEFORE setting the initial position so setPosition uses radians
         configureTurnMotor();
+        configureDriveMotor();
+        initializeTurnOffset();
     }
 
     private void configureCANcoder() {
