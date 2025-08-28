@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.2;
+    private static final double LINEAR_SCALE = 0.20; // Reduce to turn down left-stick sensitivity (e.g., 0.15)
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
     private static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -56,8 +57,8 @@ public class DriveCommands {
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
-        // Square magnitude for more precise control
-        linearMagnitude = (linearMagnitude * linearMagnitude)/4;
+        // Square magnitude for more precise control, then scale for sensitivity
+        linearMagnitude = (linearMagnitude * linearMagnitude) * LINEAR_SCALE;
 
         // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
