@@ -38,7 +38,7 @@ public class DriveConstants {
     public static final Rotation2d frontLeftZeroRotation = new Rotation2d(tau * 0.457);   // Encoder ID 1
     public static final Rotation2d frontRightZeroRotation = new Rotation2d(tau * 0.419); // Encoder ID 3
     public static final Rotation2d backLeftZeroRotation = new Rotation2d(tau * 0.108);    // Encoder ID 2
-    public static final Rotation2d backRightZeroRotation = new Rotation2d(tau * 0.781);   // 0.746 Encoder ID 4
+    public static final Rotation2d backRightZeroRotation = new Rotation2d(tau * 0.7254);   // Corrected from 0.781 - wheel was 20° right
 
     // CAN IDs
     public static final int pigeonCanId = 9;
