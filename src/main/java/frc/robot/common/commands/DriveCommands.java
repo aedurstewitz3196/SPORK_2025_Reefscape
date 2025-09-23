@@ -81,20 +81,26 @@ public class DriveCommands {
                     // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);
 
-                    // Convert to field relative speeds & send command
-                    ChassisSpeeds speeds = new ChassisSpeeds(
-                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                            linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                            omega * drive.getMaxAngularSpeedRadPerSec());
-                    boolean isFlipped = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red;
-                    speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                            speeds,
-                            isFlipped
-                                    ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                                    : drive.getRotation());
-                            //System.out.println("isFlipped is " + isFlipped);
-                    drive.runVelocity(speeds);
+                    // Only command movement if there's actual joystick input
+                    if (linearVelocity.getNorm() > 0.01 || Math.abs(omega) > 0.01) {
+                        // Convert to field relative speeds & send command
+                        ChassisSpeeds speeds = new ChassisSpeeds(
+                                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                                omega * drive.getMaxAngularSpeedRadPerSec());
+                        boolean isFlipped = DriverStation.getAlliance().isPresent()
+                                && DriverStation.getAlliance().get() == Alliance.Red;
+                        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                                speeds,
+                                isFlipped
+                                        ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                                        : drive.getRotation());
+                                //System.out.println("isFlipped is " + isFlipped);
+                        drive.runVelocity(speeds);
+                    } else {
+                        // No joystick input - stop the drive but don't force module alignment
+                        drive.stop();
+                    }
                 },
                 drive);
     }
