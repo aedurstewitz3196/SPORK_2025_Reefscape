@@ -71,18 +71,24 @@ public class DriveCommands {
             Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
         return Commands.run(
                 () -> {
-                    // Get linear velocity
-                    Translation2d linearVelocity =
-                            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+                    // Get raw joystick values for input detection
+                    double rawX = xSupplier.getAsDouble();
+                    double rawY = ySupplier.getAsDouble();
+                    double rawOmega = omegaSupplier.getAsDouble();
+                    
+                    // Check if there's actual joystick input (before deadband)
+                    boolean hasInput = Math.hypot(rawX, rawY) > DEADBAND || Math.abs(rawOmega) > DEADBAND;
+                    
+                    if (hasInput) {
+                        // Get linear velocity
+                        Translation2d linearVelocity =
+                                getLinearVelocityFromJoysticks(rawX, rawY);
 
-                    // Apply rotation deadband
-                    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+                        // Apply rotation deadband
+                        double omega = MathUtil.applyDeadband(rawOmega, DEADBAND);
 
-                    // Square rotation value for more precise control
-                    omega = Math.copySign(omega * omega, omega);
-
-                    // Only command movement if there's actual joystick input
-                    if (linearVelocity.getNorm() > 0.01 || Math.abs(omega) > 0.01) {
+                        // Square rotation value for more precise control
+                        omega = Math.copySign(omega * omega, omega);
                         // Convert to field relative speeds & send command
                         ChassisSpeeds speeds = new ChassisSpeeds(
                                 linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
