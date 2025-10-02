@@ -106,7 +106,7 @@ public class DriveCommands {
                     } else {
                         // No joystick input - stop all module movement completely
                         for (int i = 0; i < 4; i++) {
-                            drive.getModules()[i].stop();
+                            drive.stop()
                         }
                     }
                 },
