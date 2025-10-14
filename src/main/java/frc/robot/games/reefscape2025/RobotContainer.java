@@ -117,10 +117,10 @@ public class RobotContainer {
 
                 // Register your commands in NamedCommands (which stores them as Supplier<Command>)
         NamedCommands.registerCommand("CoralOutput", new ShootCoralCommand(coralouter, 0.6, false));
-        NamedCommands.registerCommand("ElevatorL1", new SetElevatorHeightCommand(elevator, 3.3, false));
-        NamedCommands.registerCommand("ElevatorL2", new SetElevatorHeightCommand(elevator, 14, false));
-        NamedCommands.registerCommand("ElevatorL3", new SetElevatorHeightCommand(elevator, 28.5, false));
-        NamedCommands.registerCommand("ElevatorL4", new SetElevatorHeightCommand(elevator, 56, false));
+        NamedCommands.registerCommand("ElevatorL1", new SetElevatorHeightCommandWithEncoder(elevator, 3.3, false));
+        NamedCommands.registerCommand("ElevatorL2", new SetElevatorHeightCommandWithEncoder(elevator, 14, false));
+        NamedCommands.registerCommand("ElevatorL3", new SetElevatorHeightCommandWithEncoder(elevator, 28.5, false));
+        NamedCommands.registerCommand("ElevatorL4", new SetElevatorHeightCommandWithEncoder(elevator, 56, false));
         
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
