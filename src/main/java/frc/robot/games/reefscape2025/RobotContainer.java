@@ -33,6 +33,7 @@ import frc.robot.common.subsystems.drive.*;
 import frc.robot.common.subsystems.vision.*;
 
 import frc.robot.games.reefscape2025.commands.SetElevatorHeightCommand;
+import frc.robot.games.reefscape2025.commands.SetElevatorHeightCommandWithEncoder;
 import frc.robot.games.reefscape2025.commands.ShootCoralCommand;
 import frc.robot.games.reefscape2025.subsystems.drive.DriveConstants;
 
