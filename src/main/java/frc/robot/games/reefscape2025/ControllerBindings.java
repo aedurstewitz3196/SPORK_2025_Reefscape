@@ -48,9 +48,9 @@ import edu.wpi.first.wpilibj.XboxController;;
                 () -> -driverController.getRightX()));
         
             // Secondary Controller face buttons
-            aButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 49, false));
-            bButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 28.5, false));
-            yButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 14, false));
+            aButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 20.5, false));
+            bButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 15, false));
+            yButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 7, false));
             xButton.onTrue(new SetElevatorHeightCommandWithEncoder(elevator, 3.3, false));
 
             // Trigger bindings with debug
@@ -58,7 +58,7 @@ import edu.wpi.first.wpilibj.XboxController;;
                 new InstantCommand(() -> System.out.println("Right Trigger Activated"))
                     .andThen(new ShootCoralCommand(coralOutput, 0.6, false))
                     .andThen(new WaitCommand(1.5))
-                    .andThen(new SetElevatorHeightCommandWithEncoder(elevator, 3.3, false))
+                    .andThen(new SetElevatorHeightCommandWithEncoder(elevator, .5, false))
             );
             leftTrigger.onTrue(
                 new InstantCommand(() -> System.out.println("Left Trigger Activated"))
