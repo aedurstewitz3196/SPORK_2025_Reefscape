@@ -20,7 +20,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkMaxAbsoluteEncoder;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -85,7 +85,7 @@ public class ModuleIOSpark implements ModuleIO {
         turnController = turnSpark.getClosedLoopController();
 
         // Get the absolute encoder from the turn Spark Max (REV Through Bore Encoder connected to data port)
-        absoluteEncoder = turnSpark.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+        absoluteEncoder = turnSpark.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
         // Configure turn motor basic settings and conversion factors BEFORE setting position
         configureTurnMotorBasic();
