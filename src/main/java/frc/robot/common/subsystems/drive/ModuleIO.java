@@ -42,7 +42,7 @@ public interface ModuleIO {
         public double turnStatorCurrent = 0.0; // Stator current of the turn motor
         public boolean turnFault = false; // Turn motor fault state
     
-        // Absolute encoder inputs (for Phoenix6 CANcoder)
+        // Absolute encoder inputs (for REV Through Bore Encoder)
         public double moduleAbsolutePositionRad = 0.0; // Absolute position in radians
         public double moduleVelocityRadPerSec = 0.0; // Absolute encoder velocity in rad/sec
     

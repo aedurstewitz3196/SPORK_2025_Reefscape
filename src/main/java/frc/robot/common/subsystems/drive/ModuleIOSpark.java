@@ -13,15 +13,15 @@
 
 package frc.robot.common.subsystems.drive;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkMaxAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -31,7 +31,7 @@ import frc.robot.GlobalConstants.driveConstants;
 
 /**
  * Updated Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
- * and a CANCoder absolute encoder for initialization.
+ * and a REV Through Bore Encoder absolute encoder for initialization.
  */
 public class ModuleIOSpark implements ModuleIO {
 
@@ -42,7 +42,7 @@ public class ModuleIOSpark implements ModuleIO {
     private final SparkBase turnSpark;
     private final RelativeEncoder driveEncoder;
     private final RelativeEncoder turnEncoder;
-    private final CANcoder absoluteEncoder;
+    private final AbsoluteEncoder absoluteEncoder;
 
     // Closed loop controllers
     private final SparkClosedLoopController driveController;
@@ -79,24 +79,18 @@ public class ModuleIOSpark implements ModuleIO {
             MotorType.kBrushless
         );
 
-        absoluteEncoder = new CANcoder(
-            switch (module) {
-                case 0 -> driveConstants.frontLeftEncoderCanId;
-                case 1 -> driveConstants.frontRightEncoderCanId;
-                case 2 -> driveConstants.backLeftEncoderCanId;
-                case 3 -> driveConstants.backRightEncoderCanId;
-                default -> 0;
-            }
-        );
-
         driveEncoder = driveSpark.getEncoder();
         turnEncoder = turnSpark.getEncoder();
         driveController = driveSpark.getClosedLoopController();
         turnController = turnSpark.getClosedLoopController();
 
-        configureCANcoder();
+        // Get the absolute encoder from the turn Spark Max (REV Through Bore Encoder connected to data port)
+        absoluteEncoder = turnSpark.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+
         // Configure turn motor basic settings and conversion factors BEFORE setting position
         configureTurnMotorBasic();
+        // Configure absolute encoder settings
+        configureAbsoluteEncoder();
         // Initialize the turn offset BEFORE configuring closed-loop control
         initializeTurnOffset();
         // Configure closed-loop control AFTER position is properly set
@@ -104,11 +98,14 @@ public class ModuleIOSpark implements ModuleIO {
         configureDriveMotor();
     }
 
-    private void configureCANcoder() {
-        var config = new com.ctre.phoenix6.configs.CANcoderConfiguration();
-        config.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-        config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-        absoluteEncoder.getConfigurator().apply(config);
+    private void configureAbsoluteEncoder() {
+        // Configure the REV Through Bore Encoder (connected to SPARK MAX data port)
+        // The encoder position is in rotations (0.0 to 1.0)
+        // Set conversion factors to 1.0 since position is already in rotations
+        absoluteEncoder.setPositionConversionFactor(1.0);
+        absoluteEncoder.setVelocityConversionFactor(1.0);
+        // Note: Through Bore Encoders typically don't need inversion, but adjust if needed
+        // absoluteEncoder.setInverted(false);
     }
 
     private void configureDriveMotor() {
@@ -141,6 +138,11 @@ public class ModuleIOSpark implements ModuleIO {
         turnConfig.encoder
             .positionConversionFactor(driveConstants.turnEncoderPositionFactor) // Apply gear reduction correction
             .velocityConversionFactor(driveConstants.turnEncoderVelocityFactor); // Correct velocity scaling
+        
+        // Configure absolute encoder (REV Through Bore Encoder connected to data port)
+        turnConfig.absoluteEncoder
+            .positionConversionFactor(1.0) // Position in rotations (0.0 to 1.0)
+            .velocityConversionFactor(1.0); // Velocity conversion factor
     
         // Apply basic configuration without closed-loop control
         turnSpark.configure(turnConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
@@ -161,7 +163,7 @@ public class ModuleIOSpark implements ModuleIO {
     }    
 
     private void initializeTurnOffset() {
-        double absolutePosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble(); // Rotations (0.0 to 1.0)
+        double absolutePosition = absoluteEncoder.getPosition(); // Rotations (0.0 to 1.0) from REV Through Bore Encoder
         double absolutePositionRad = absolutePosition * driveConstants.tau; // Convert to radians
         double zeroOffsetRad = zeroRotation.getRadians(); // Radians
         turnEncoder.setPosition(absolutePositionRad - zeroOffsetRad);
@@ -173,7 +175,7 @@ public class ModuleIOSpark implements ModuleIO {
             Thread.currentThread().interrupt();
         }
         
-        System.out.println("Module " + absoluteEncoder.getDeviceID() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
+        System.out.println("Module " + ((SparkMax) turnSpark).getDeviceId() + " absolutePosition is " + absolutePosition + " rotations, offsetted position is " + turnEncoder.getPosition() + " radians");
     }
     private Rotation2d getTurnPosition() {
         return Rotation2d.fromRadians(turnEncoder.getPosition());
