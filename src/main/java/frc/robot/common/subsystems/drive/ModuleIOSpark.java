@@ -79,13 +79,22 @@ public class ModuleIOSpark implements ModuleIO {
             MotorType.kBrushless
         );
 
+        absoluteEncoder = new SparkAbsoluteEncoder(
+            switch (module) {
+                case 0 -> driveConstants.frontLeftEncoderCanId;
+                case 1 -> driveConstants.frontRightEncoderCanId;
+                case 2 -> driveConstants.backLeftEncoderCanId;
+                case 3 -> driveConstants.backRightEncoderCanId;
+                default -> 0;
+            }
+        );
+
         driveEncoder = driveSpark.getEncoder();
         turnEncoder = turnSpark.getEncoder();
         driveController = driveSpark.getClosedLoopController();
         turnController = turnSpark.getClosedLoopController();
 
-        // Get the absolute encoder from the turn Spark Max (REV Through Bore Encoder connected to data port)
-        absoluteEncoder = turnSpark.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+     
 
         // Configure turn motor basic settings and conversion factors BEFORE setting position
         configureTurnMotorBasic();
@@ -102,8 +111,8 @@ public class ModuleIOSpark implements ModuleIO {
         // Configure the REV Through Bore Encoder (connected to SPARK MAX data port)
         // The encoder position is in rotations (0.0 to 1.0)
         // Set conversion factors to 1.0 since position is already in rotations
-        absoluteEncoder.setPositionConversionFactor(1.0);
-        absoluteEncoder.setVelocityConversionFactor(1.0);
+        //absoluteEncoder.setPositionConversionFactor(1.0);
+        //absoluteEncoder.setVelocityConversionFactor(1.0);
         // Note: Through Bore Encoders typically don't need inversion, but adjust if needed
         // absoluteEncoder.setInverted(false);
     }
